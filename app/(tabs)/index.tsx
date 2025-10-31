@@ -1,15 +1,34 @@
-import { View, StyleSheet, Dimensions} from "react-native";
+import {View, StyleSheet, Dimensions} from "react-native";
 import ImageViewer from '@/components/ImageViewer'
 import Button from '@/components/Button'
+import * as ImagePicker from 'expo-image-picker'
+import {useState} from "react";
 
 export default function Index() {
+    const [imagePath, setImagePath] = useState('')
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            console.log(result.assets[0].uri)
+            setImagePath(result.assets[0].uri)
+            if (imagePath) {
+                console.log('show image', imagePath)
+            }
+        }
+        console.log(result)
+    };
     return (
         <View style={styles.container}>
             <View style={styles.imageContainer}>
-                <ImageViewer imgSource={require('@/assets/images/a.png')}></ImageViewer>
+                <ImageViewer imgSource={ imagePath ? {uri: imagePath} :require('@/assets/images/a.png')}/>
             </View>
             <View style={styles.footerContainer}>
-                <Button label={'点击上传'}></Button>
+                <Button label={'点击上传'} onPress={pickImage}></Button>
             </View>
         </View>
     )
@@ -39,7 +58,7 @@ const styles = StyleSheet.create({
         color: 'white'
     },
     footerContainer: {
-        flex: 1/5,
+        flex: 1 / 5,
         width: '60%',
         alignItems: "center",
     }
