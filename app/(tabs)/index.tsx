@@ -2,9 +2,18 @@ import {View, StyleSheet, Dimensions} from "react-native";
 import ImageViewer from '@/components/ImageViewer'
 import Button from '@/components/Button'
 import * as ImagePicker from 'expo-image-picker'
-import {useState} from "react";
+import {useEffect, useState} from "react";
+import { useShareIntentContext } from "expo-share-intent";
 
 export default function Index() {
+    const { hasShareIntent } = useShareIntentContext();
+    useEffect(() => {
+        if (hasShareIntent) {
+            // we want to handle share intent event in a specific page
+            console.debug("[expo-router-index] sean");
+        }
+    }, [hasShareIntent]);
+
     const [imagePath, setImagePath] = useState('')
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
