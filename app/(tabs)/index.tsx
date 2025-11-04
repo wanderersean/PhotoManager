@@ -3,41 +3,27 @@ import ImageViewer from '@/components/ImageViewer'
 import Button from '@/components/Button'
 import * as ImagePicker from 'expo-image-picker'
 import {useEffect, useState} from "react";
-import { useShareIntentContext } from "expo-share-intent";
+import {useShareIntentContext} from "expo-share-intent";
 
 export default function Index() {
-    const { hasShareIntent } = useShareIntentContext();
+    const [imagePath, setImagePath] = useState('')
+    const {hasShareIntent, shareIntent} = useShareIntentContext();
     useEffect(() => {
         if (hasShareIntent) {
             // we want to handle share intent event in a specific page
-            console.debug("[expo-router-index] sean");
+            console.debug("[expo-router-index] sean", shareIntent);
+            let filePath = shareIntent.files?.at(0)?.path
+            setImagePath(filePath ? filePath : '')
         }
-    }, [hasShareIntent]);
-
-    const [imagePath, setImagePath] = useState('')
-    const pickImage = async () => {
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            quality: 1,
-        });
-
-        if (!result.canceled) {
-            console.log(result.assets[0].uri)
-            setImagePath(result.assets[0].uri)
-            if (imagePath) {
-                console.log('show image', imagePath)
-            }
-        }
-        console.log(result)
-    };
+    }, [hasShareIntent, shareIntent]);
     return (
         <View style={styles.container}>
             <View style={styles.imageContainer}>
-                <ImageViewer imgSource={ imagePath ? {uri: imagePath} :require('@/assets/images/a.png')}/>
+                <ImageViewer imgSource={imagePath}/>
             </View>
             <View style={styles.footerContainer}>
-                <Button label={'点击上传'} onPress={pickImage}></Button>
+                <Button label={'点击上传a'} onPress={()=>{
+                    console.log('被点击了')}}></Button>
             </View>
         </View>
     )
