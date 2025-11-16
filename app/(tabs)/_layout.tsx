@@ -7,19 +7,22 @@ export default function Layout() {
         <Tabs screenOptions={{
             tabBarActiveTintColor: 'tomato',
             headerStyle: {backgroundColor: 'grey'},
-            headerTintColor: 'red',
-            tabBarStyle:{
-                backgroundColor: 'blue'
+            headerShown: true,
+            tabBarStyle: {
+                backgroundColor: 'white',
             }
         }}>
+
             <Tabs.Screen name="index" options={{
-                title: 'Home',
+                title: '查看',
                 tabBarIcon: ({color, focused}) => {
                     return <Ionicons name={focused ? "home-sharp" : "home-outline"} size={20} color={color}/>
                 }
             }}/>
-            <Tabs.Screen name="about" options={{
-                title: 'About',
+
+            <Tabs.Screen name="upload" options={{
+                title: '上传',
+                headerShown: false,
                 tabBarIcon: ({color, focused}) => {
                     return <Ionicons name={focused ? "information-circle" : "information-circle-outline"} size={20}
                                      color={color}/>

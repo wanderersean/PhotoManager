@@ -1,10 +1,19 @@
 import {StyleSheet, View, Pressable, Text} from "react-native";
+import {useState} from "react";
 import {FontAwesome} from "@expo/vector-icons";
 
-export default function Button({label, onPress}: any) {
+export default function Button({label, onPress, enabled}: any) {
+    const [buttonPressed, setButtonPressed] = useState(false)
     return (
         <View style={styles.buttonContainer}>
-            <Pressable style={styles.button} onPress={onPress}>
+            <Pressable disabled={!enabled} style={[styles.button, buttonPressed && styles.buttonPressed]}
+                       onPress={onPress}
+                       onPressIn={() => {
+                           setButtonPressed(true)
+                       }}
+                       onPressOut={() => {
+                           setButtonPressed(false)
+                       }}>
                 <FontAwesome name={'cloud-upload'} style={styles.buttonIcon} size={28} color={'white'}></FontAwesome>
                 <Text style={styles.buttonLabel}>{label}</Text>
             </Pressable>
@@ -35,5 +44,10 @@ const styles = StyleSheet.create({
     },
     buttonIcon: {
         paddingRight: 20,
-    }
+    },
+    buttonPressed: {
+        opacity: 0.5,
+    },
+    buttonDisabled: {},
+
 });

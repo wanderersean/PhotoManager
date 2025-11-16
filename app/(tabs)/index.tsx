@@ -1,60 +1,27 @@
-import {View, StyleSheet, Dimensions} from "react-native";
-import ImageViewer from '@/components/ImageViewer'
-import Button from '@/components/Button'
-import * as ImagePicker from 'expo-image-picker'
-import {useEffect, useState} from "react";
-import {useShareIntentContext} from "expo-share-intent";
+import {View, Text, StyleSheet} from 'react-native'
+import {useSafeAreaInsets} from "react-native-safe-area-context";
 
 export default function Index() {
-    const [imagePath, setImagePath] = useState('')
-    const {hasShareIntent, shareIntent} = useShareIntentContext();
-    useEffect(() => {
-        if (hasShareIntent) {
-            // we want to handle share intent event in a specific page
-            console.debug("[expo-router-index] sean", shareIntent);
-            let filePath = shareIntent.files?.at(0)?.path
-            setImagePath(filePath ? filePath : '')
-        }
-    }, [hasShareIntent, shareIntent]);
+    console.log(useSafeAreaInsets())
     return (
-        <View style={styles.container}>
-            <View style={styles.imageContainer}>
-                <ImageViewer imgSource={imagePath}/>
-            </View>
-            <View style={styles.footerContainer}>
-                <Button label={'点击上传a'} onPress={()=>{
-                    console.log('被点击了')}}></Button>
+        <View style={{height: '50%', backgroundColor: 'red'}}>
+            <View style={styles.container}>
+                <Text style={styles.text}>
+                    This is About 页面
+                </Text>
             </View>
         </View>
     )
 }
 
-const {height, width} = Dimensions.get('window')
-
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: 'grey',
-        width: '100%',
-    },
-    imageContainer: {
-        flex: 1,
-    },
-    image: {
-        borderRadius: 15,
-        borderColor: 'white',
-        borderWidth: 3,
-        width: width * 0.9,
-        height: height * 0.7,
+        flex: 0.8,
+        backgroundColor: '#25292e',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     text: {
-        color: 'white'
+        color: '#fff',
     },
-    footerContainer: {
-        flex: 1 / 5,
-        width: '60%',
-        alignItems: "center",
-    }
 })
