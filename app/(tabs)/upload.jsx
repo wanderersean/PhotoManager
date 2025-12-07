@@ -67,7 +67,7 @@ export default function Upload() {
 
                 <TagEditor tags={tags} setTags={setTags}></TagEditor>
 
-                <SubmitButton onPress={onSubmit}></SubmitButton>
+                <SubmitButton enabled={!isUploading} onPress={onSubmit}></SubmitButton>
 
 
             </SafeAreaView>
