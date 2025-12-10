@@ -1,8 +1,9 @@
-import React, {useState} from 'react';
-import {View, StyleSheet, Text, ScrollView, TouchableOpacity, Image} from 'react-native';
+import React, {useState, useRef} from 'react';
+import {View, StyleSheet, Text, ScrollView, TouchableOpacity, Image, PanResponder} from 'react-native';
 
 export default function MediaViewer({medias}) {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const scrollViewRef = useRef(null);
 
     // Convert media resources to image objects
     // Handle both local require() resources and URI strings
@@ -22,8 +23,27 @@ export default function MediaViewer({medias}) {
     // Handle image selection
     const handleImageSelect = (index) => {
         setCurrentIndex(index);
-        console.log("Image selected at index:", index);
+        // Scroll to the selected thumbnail
+        if (scrollViewRef.current) {
+            scrollViewRef.current.scrollTo({x: index * 70, animated: true});
+        }
     };
+
+    // Create PanResponder for swipe gestures
+    const panResponder = PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onPanResponderRelease: (evt, gestureState) => {
+            const { dx } = gestureState;
+            // Swipe right (previous image)
+            if (dx > 50 && currentIndex > 0) {
+                handleImageSelect(currentIndex - 1);
+            }
+            // Swipe left (next image)
+            else if (dx < -50 && currentIndex < medias.length - 1) {
+                handleImageSelect(currentIndex + 1);
+            }
+        },
+    });
 
     return (
         <View style={styles.container}>
@@ -32,6 +52,7 @@ export default function MediaViewer({medias}) {
                     {/* 上方20%缩略图区域 */}
                     <View style={styles.thumbnailContainer}>
                         <ScrollView 
+                            ref={scrollViewRef}
                             horizontal={true}
                             showsHorizontalScrollIndicator={false}
                             contentContainerStyle={styles.thumbnailScrollContainer}
@@ -57,11 +78,16 @@ export default function MediaViewer({medias}) {
                     
                     {/* 下方80%大图展示区域 */}
                     <View style={styles.viewerContainer}>
-                        <Image 
-                            source={imageSources[currentIndex]} 
-                            style={styles.mainImage}
-                            resizeMode="contain"
-                        />
+                        <View 
+                            {...panResponder.panHandlers}
+                            style={styles.mainImageContainer}
+                        >
+                            <Image 
+                                source={imageSources[currentIndex]} 
+                                style={styles.mainImage}
+                                resizeMode="contain"
+                            />
+                        </View>
                     </View>
                 </>
             ) : (
@@ -106,6 +132,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#000',
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    mainImageContainer: {
+        width: '100%',
+        height: '100%',
     },
     mainImage: {
         width: '100%',

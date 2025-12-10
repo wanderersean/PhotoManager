@@ -4,6 +4,7 @@ import {useEffect, useRef, useState} from "react"
 import {Dimensions, StyleSheet, View, Text, TextInput} from "react-native"
 import {KeyboardAwareScrollView} from "react-native-keyboard-aware-scroll-view"
 import Toast from 'react-native-toast-message'
+import {SafeAreaView} from 'react-native-safe-area-context'
 
 import ProgressBar from '../../components/ProgressBar'
 import SubmitButton from "../../components/SubmitButton";
@@ -17,6 +18,7 @@ export default function Upload() {
     const onSubmit = async () => {
         try {
             setIsUploading(true)
+            console.log('哈哈哈哈')
             Toast.show({type: 'success', text1: '上传成功'})
         } catch (e) {
             Toast.show({type: 'error', text1: '上传失败，请重试'})
@@ -48,8 +50,8 @@ export default function Upload() {
     ]
 
     return (
+
         <View style={styles.container}>
-            <ProgressBar progress={progress}></ProgressBar>
 
             <TitleEditor title={title} onSave={setTitle}></TitleEditor>
 
@@ -57,19 +59,22 @@ export default function Upload() {
 
             <MediaViewer medias={files}></MediaViewer>
 
+            <ProgressBar progress={progress}></ProgressBar>
 
             <SubmitButton enabled={!isUploading} onPress={onSubmit}
                           style={styles.submitButtonContainer}></SubmitButton>
+
         </View>
     )
 }
+
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'grey',
         alignItems: 'center',
-        justifyContent: 'flex-start',
+        justifyContent: 'space-between',
     },
 
 

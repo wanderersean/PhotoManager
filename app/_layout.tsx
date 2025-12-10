@@ -1,12 +1,13 @@
-import {Stack} from "expo-router";
-import {ShareIntentProvider} from "expo-share-intent";
+import { Stack } from "expo-router";
+import { ShareIntentProvider } from "expo-share-intent";
 import Toast from 'react-native-toast-message';
-import {StyleSheet} from "react-native";
-import AppHeader from '../components/AppHeader'; // 导入自定义头部组件
+import {Dimensions, Text, StyleSheet} from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {StatusBar} from "expo-status-bar";
+import AppHeader from "@/components/AppHeader";
 
 export default function RootLayout() {
+    console.log('root', Dimensions.get('window').height)
     return (
         <ShareIntentProvider
             options={{
@@ -28,9 +29,9 @@ export default function RootLayout() {
                 >
                     <Stack.Screen name='(tabs)' ></Stack.Screen>
                 </Stack>
-
-                <Toast visibilityTime={2000}></Toast>
             </SafeAreaView>
+
+            <Toast visibilityTime={2000}></Toast>
         </ShareIntentProvider>
     )
 }
