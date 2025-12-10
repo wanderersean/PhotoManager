@@ -3,9 +3,7 @@ import {useShareIntentContext} from "expo-share-intent"
 import {useEffect, useRef, useState} from "react"
 import {Dimensions, StyleSheet, View, Text, TextInput} from "react-native"
 import {KeyboardAwareScrollView} from "react-native-keyboard-aware-scroll-view"
-import Tags from 'react-native-tags'
 import Toast from 'react-native-toast-message'
-import {SafeAreaView} from 'react-native-safe-area-context'
 
 import ProgressBar from '../../components/ProgressBar'
 import SubmitButton from "../../components/SubmitButton";
@@ -19,7 +17,6 @@ export default function Upload() {
     const onSubmit = async () => {
         try {
             setIsUploading(true)
-            await upload('sean', imagePath, '标题', tags, setProgress)
             Toast.show({type: 'success', text1: '上传成功'})
         } catch (e) {
             Toast.show({type: 'error', text1: '上传失败，请重试'})
@@ -51,38 +48,28 @@ export default function Upload() {
     ]
 
     return (
-        <KeyboardAwareScrollView
-            style={[{backgroundColor: 'yellow', flex: 1}]}
-            contentContainerStyle={{minHeight: Dimensions.get('window').height}}
-            enableOnAndroid={true}
-            keyboardShouldPersistTaps="handled"
-        >
+        <View style={styles.container}>
+            <ProgressBar progress={progress}></ProgressBar>
 
-            <SafeAreaView style={[styles.container]}>
-                <ProgressBar progress={progress}></ProgressBar>
+            <TitleEditor title={title} onSave={setTitle}></TitleEditor>
 
-                <MediaViewer medias={files}></MediaViewer>
+            <TagEditor tags={tags} setTags={setTags}></TagEditor>
 
-                <TitleEditor title={title} onSave={setTitle}></TitleEditor>
-
-                <TagEditor tags={tags} setTags={setTags}></TagEditor>
-
-                <SubmitButton enabled={!isUploading} onPress={onSubmit}></SubmitButton>
+            <MediaViewer medias={files}></MediaViewer>
 
 
-            </SafeAreaView>
-
-        </KeyboardAwareScrollView>
+            <SubmitButton enabled={!isUploading} onPress={onSubmit}
+                          style={styles.submitButtonContainer}></SubmitButton>
+        </View>
     )
 }
-
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'grey',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-start',
     },
 
 
@@ -99,8 +86,11 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: 'blue',
     },
+    submitButtonContainer: {
+        width: '100%',
+    },
     footerContainer: {
-        width: '60%',
+        width: '100%',
         alignItems: "center",
     },
     hidden: {

@@ -12,5 +12,6 @@ export default function ProgressBar({progress}) {
 const styles = StyleSheet.create({
     progressContainer: {
         width: '100%',
+        display: 'none'
     },
 });

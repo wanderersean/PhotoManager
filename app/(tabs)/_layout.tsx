@@ -1,5 +1,5 @@
 import {Tabs} from 'expo-router'
-import {Ionicons} from "@expo/vector-icons";
+import {Ionicons} from "@expo/vector-icons"
 
 
 export default function Layout() {
@@ -7,7 +7,7 @@ export default function Layout() {
         <Tabs screenOptions={{
             tabBarActiveTintColor: 'tomato',
             headerStyle: {backgroundColor: 'grey'},
-            headerShown: true,
+            headerShown: false,
             tabBarStyle: {
                 backgroundColor: 'white',
             }
@@ -22,7 +22,6 @@ export default function Layout() {
 
             <Tabs.Screen name="upload" options={{
                 title: '上传',
-                headerShown: false,
                 tabBarIcon: ({color, focused}) => {
                     return <Ionicons name={focused ? "information-circle" : "information-circle-outline"} size={20}
                                      color={color}/>

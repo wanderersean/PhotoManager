@@ -1,33 +1,36 @@
 import React, {useState, useRef} from "react";
-import {View, StyleSheet, Text, Pressable, ActivityIndicator} from "react-native";
+import {View, StyleSheet, Text, Pressable, Animated} from "react-native";
 
 export default function SubmitButton({enabled, onPress}) {
-    const [progress, setProgress] = useState(0);
     const [isPressed, setIsPressed] = useState(false);
+    const progressAnimation = useRef(new Animated.Value(0)).current;
     const pressTimer = useRef(null);
 
     const handlePressIn = () => {
         if (!enabled) return;
         
         setIsPressed(true);
-        setProgress(0);
+        progressAnimation.setValue(0); // 确保从0开始
         
-        // 开始计时器，2秒内逐渐增加进度
+        // 开始动画，2秒内逐渐增加进度
+        Animated.timing(progressAnimation, {
+            toValue: 1,
+            duration: 2000,
+            useNativeDriver: false,
+        }).start();
+        
+        // 同时启动定时器检查完成状态
         const startTime = Date.now();
         const duration = 2000; // 2秒
         
         pressTimer.current = setInterval(() => {
             const elapsed = Date.now() - startTime;
-            const newProgress = Math.min(elapsed / duration, 1);
-            
-            setProgress(newProgress);
+            const progress = Math.min(elapsed / duration, 1);
             
             // 如果达到100%，则触发上传
-            if (newProgress >= 1) {
+            if (progress >= 1) {
                 clearInterval(pressTimer.current);
                 onPress();
-                setProgress(0);
-                setIsPressed(false);
             }
         }, 16); // 约60fps
     };
@@ -35,36 +38,53 @@ export default function SubmitButton({enabled, onPress}) {
     const handlePressOut = () => {
         if (!enabled) return;
         
-        // 清除计时器
+        // 清除定时器
         if (pressTimer.current) {
             clearInterval(pressTimer.current);
             pressTimer.current = null;
         }
         
+        // 停止动画并重置
+        progressAnimation.stopAnimation();
+        Animated.timing(progressAnimation, {
+            toValue: 0,
+            duration: 100,
+            useNativeDriver: false,
+        }).start();
+        
         // 重置状态
-        setProgress(0);
         setIsPressed(false);
+    };
+
+    // 计算进度遮罩的样式 - 使用width属性更直观地控制进度
+    const progressMaskStyle = {
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        bottom: 0,
+        width: progressAnimation.interpolate({
+            inputRange: [0, 1],
+            outputRange: ['0%', '100%'],
+        }),
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        // 添加圆角以匹配按钮的圆角
+        borderTopLeftRadius: 30,
+        borderBottomLeftRadius: 30,
     };
 
     return (
         <View style={styles.container}>
             <Pressable 
-                style={[styles.button, !enabled && styles.buttonDisabled, isPressed && styles.buttonPressed]}
+                style={[styles.button, !enabled && styles.buttonDisabled]}
                 onPressIn={handlePressIn}
                 onPressOut={handlePressOut}
                 disabled={!enabled}
             >
-                <View style={styles.contentContainer}>
-                    {/* 使用ActivityIndicator替代Progress.Circle */}
-                    {isPressed ? (
-                        <ActivityIndicator 
-                            size="small" 
-                            color="white" 
-                            style={styles.activityIndicator}
-                        />
-                    ) : null}
-                    <Text style={styles.buttonLabel}>长按上传</Text>
-                </View>
+                {/* 进度遮罩层 */}
+                {isPressed && (
+                    <Animated.View style={[styles.progressMask, progressMaskStyle]} />
+                )}
+                <Text style={styles.buttonLabel}>长按上传</Text>
             </Pressable>
         </View>
     );
@@ -75,36 +95,38 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 16,
         backgroundColor: '#fff',
+        marginBottom: 20,
     },
     button: {
         backgroundColor: 'blue',
         paddingVertical: 15,
-        paddingHorizontal: 30,
         borderRadius: 30,
+        borderWidth: 3,
         width: '100%',
         alignItems: 'center',
-        justifyContent: 'center',
-    },
-    buttonPressed: {
-        backgroundColor: '#0000cc', // 按下时更深的蓝色
+        // 添加overflow隐藏以确保遮罩不会超出边界
+        overflow: 'hidden',
+        position: 'relative',
     },
     buttonDisabled: {
-        backgroundColor: '#cccccc', // 禁用时的灰色
+        backgroundColor: '#cccccc',
     },
-    contentContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    activityIndicator: {
-        marginRight: 10,
+    progressMask: {
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        // 添加圆角以匹配按钮的圆角
+        borderTopLeftRadius: 30,
+        borderBottomLeftRadius: 30,
     },
     buttonLabel: {
         color: 'white',
         fontWeight: 'bold',
         fontSize: 16,
         textAlign: 'center',
+        zIndex: 1,
     },
 });
