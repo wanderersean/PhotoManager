@@ -32,12 +32,15 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   input: {
-    height: 30,
+    height: 25, // 减小高度
     width: '100%',
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 8,
-    paddingHorizontal: 10,
+    paddingHorizontal: 8, // 减小水平内边距
+    paddingVertical: 8, // 减小垂直内边距
     backgroundColor: '#fff',
+    fontSize: 14, // 减小字体大小
+    lineHeight: 14, // 减小行高
   },
 });

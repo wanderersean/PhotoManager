@@ -30,8 +30,6 @@ export default function TagEditor({tags, setTags}) {
 
 const styles = StyleSheet.create({
     tagContainer: {
-        marginTop: 20,
         alignItems: 'center',
-        paddingTop: 20,
     },
 });

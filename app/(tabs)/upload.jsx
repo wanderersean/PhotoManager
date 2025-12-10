@@ -12,6 +12,7 @@ import TitleEditor from "../../components/TitleEditor";
 import TagEditor from "../../components/TagEditor";
 import useIntentFiles from "../../lib/intent";
 import MediaViewer from "../../components/MediaViewer";
+import {Card, Divider} from "react-native-paper";
 
 
 export default function Upload() {
@@ -50,17 +51,21 @@ export default function Upload() {
     ]
 
     return (
-
         <View style={styles.container}>
-
-            <TitleEditor title={title} onSave={setTitle}></TitleEditor>
-
-            <TagEditor tags={tags} setTags={setTags}></TagEditor>
-
+            <View style={{width: '100%'}}>
+                <Card mode={'outlined'}>
+                    <Card.Content>
+                        <TitleEditor title={title} onSave={setTitle}></TitleEditor>
+                        <TagEditor tags={tags} setTags={setTags}></TagEditor>
+                    </Card.Content>
+                </Card>
+            </View>
             <MediaViewer medias={files}></MediaViewer>
+            <Divider style={styles.divider} />
 
             <ProgressBar progress={progress}></ProgressBar>
 
+            <Divider style={styles.divider} />
             <SubmitButton enabled={!isUploading} onPress={onSubmit}
                           style={styles.submitButtonContainer}></SubmitButton>
 
@@ -72,7 +77,7 @@ export default function Upload() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'grey',
+        backgroundColor: 'red',
         alignItems: 'center',
         justifyContent: 'space-between',
     },
@@ -102,5 +107,10 @@ const styles = StyleSheet.create({
         display: 'none'
     },
     buttonPressed: {},
-
+    divider: {
+        height: 1,
+        width: '100%',
+        backgroundColor: '#ccc',
+        marginVertical: 10,
+    },
 })
