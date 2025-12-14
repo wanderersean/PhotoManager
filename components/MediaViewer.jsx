@@ -2,7 +2,7 @@ import React, {useState, useRef} from 'react';
 import {View, StyleSheet, Text, ScrollView, TouchableOpacity, Image, PanResponder} from 'react-native';
 import TitleEditor from "./TitleEditor";
 import TagEditor from "./TagEditor";
-import { Card } from 'react-native-paper';
+import { Card, Divider } from 'react-native-paper';
 
 export default function MediaViewer({medias, style}) {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -90,6 +90,9 @@ export default function MediaViewer({medias, style}) {
                             <Text style={styles.thumbnailTitle}>缩略图</Text>
                             <Text style={styles.imageCountText}>当前是第 {currentIndex + 1}/{medias.length} 张图片</Text>
                         </View>
+                        
+                        {/* 添加Divider组件实现图片与标题的隔离 */}
+                        <Divider />
                         
                         {/* 缩略图区域 */}
                         <View 
