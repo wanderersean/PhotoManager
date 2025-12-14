@@ -52,20 +52,11 @@ export default function Upload() {
 
     return (
         <View style={styles.container}>
-            <View style={{width: '100%'}}>
-                <Card mode={'outlined'}>
-                    <Card.Content>
-                        <TitleEditor title={title} onSave={setTitle}></TitleEditor>
-                        <TagEditor tags={tags} setTags={setTags}></TagEditor>
-                    </Card.Content>
-                </Card>
-            </View>
-            <MediaViewer medias={files}></MediaViewer>
-            <Divider style={styles.divider} />
-
             <ProgressBar progress={progress}></ProgressBar>
 
-            <Divider style={styles.divider} />
+            <MediaViewer medias={files}></MediaViewer>
+
+
             <SubmitButton enabled={!isUploading} onPress={onSubmit}
                           style={styles.submitButtonContainer}></SubmitButton>
 

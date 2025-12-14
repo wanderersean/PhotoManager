@@ -1,5 +1,6 @@
-import { View, StyleSheet} from "react-native";
-import { TextInput } from 'react-native-paper';
+import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { TextInput, IconButton } from 'react-native-paper';
+import React from "react";
 
 export default function TitleEditor({title, onSave}) {
 
@@ -13,7 +14,14 @@ export default function TitleEditor({title, onSave}) {
                     onSave(text)
                 }}
                 value={title}
-                style={styles.textInput} // 添加样式属性
+                style={styles.textInput}
+                left={<TextInput.Icon icon="pencil" />} // 添加前置图标
+                right={title ? // 只有当有标题内容时才显示清除按钮
+                    <TextInput.Icon 
+                        icon="close" 
+                        onPress={() => onSave('')} // 清除标题
+                    /> : null
+                }
             />
         </View>
     )
@@ -22,12 +30,10 @@ export default function TitleEditor({title, onSave}) {
 const styles = StyleSheet.create({
     titleContainer: {
         width: '100%',
-        backgroundColor: 'white',
-        opacity: 0.7,
-        borderRadius: 10,
+        marginBottom: 10,
     },
     textInput: {
-        height: 40, // 设置较小的高度
-        fontSize: 14, // 设置较小的字体大小
+        height: 40,
+        fontSize: 14,
     }
 })

@@ -1,8 +1,12 @@
 import React, {useState, useRef} from 'react';
 import {View, StyleSheet, Text, ScrollView, TouchableOpacity, Image, PanResponder} from 'react-native';
+import TitleEditor from "./TitleEditor";
+import TagEditor from "./TagEditor";
 
 export default function MediaViewer({medias}) {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [titles, setTitles] = useState(medias.map(() => '')); // 为每张图片存储标题
+    const [tags, setTags] = useState(medias.map(() => [])); // 为每张图片存储标签
     const scrollViewRef = useRef(null);
 
     // Convert media resources to image objects
@@ -27,6 +31,20 @@ export default function MediaViewer({medias}) {
         if (scrollViewRef.current) {
             scrollViewRef.current.scrollTo({x: index * 70, animated: true});
         }
+    };
+
+    // 更新当前图片的标题
+    const handleTitleChange = (title) => {
+        const newTitles = [...titles];
+        newTitles[currentIndex] = title;
+        setTitles(newTitles);
+    };
+
+    // 更新当前图片的标签
+    const handleTagsChange = (newTags) => {
+        const newTagsArray = [...tags];
+        newTagsArray[currentIndex] = newTags;
+        setTags(newTagsArray);
     };
 
     // Create PanResponder for swipe gestures
@@ -78,6 +96,19 @@ export default function MediaViewer({medias}) {
                     
                     {/* 下方80%大图展示区域 */}
                     <View style={styles.viewerContainer}>
+                        {/* 标题和标签编辑区域 - 不再重叠 */}
+                        <View style={styles.editorSection}>
+                            <TitleEditor 
+                                title={titles[currentIndex] || ''} 
+                                onSave={handleTitleChange}
+                            />
+                            <TagEditor 
+                                tags={tags[currentIndex] || []} 
+                                setTags={handleTagsChange}
+                            />
+                        </View>
+                        
+                        {/* 图片展示区域 */}
                         <View 
                             {...panResponder.panHandlers}
                             style={styles.mainImageContainer}
@@ -130,12 +161,15 @@ const styles = StyleSheet.create({
     viewerContainer: {
         height: '80%', // 占据80%的高度
         backgroundColor: '#000',
-        justifyContent: 'center',
-        alignItems: 'center',
+        flexDirection: 'column',
+    },
+    editorSection: {
+        backgroundColor: '#f0f0f0',
+        padding: 10,
     },
     mainImageContainer: {
+        flex: 1,
         width: '100%',
-        height: '100%',
     },
     mainImage: {
         width: '100%',
