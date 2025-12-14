@@ -54,8 +54,9 @@ export default function Upload() {
         <View style={styles.container}>
             <ProgressBar progress={progress}></ProgressBar>
 
-            <MediaViewer medias={files}></MediaViewer>
-
+            <View style={styles.mediaViewerContainer}>
+                <MediaViewer medias={files}></MediaViewer>
+            </View>
 
             <SubmitButton enabled={!isUploading} onPress={onSubmit}
                           style={styles.submitButtonContainer}></SubmitButton>
@@ -89,6 +90,9 @@ const styles = StyleSheet.create({
     },
     submitButtonContainer: {
         width: '100%',
+    },
+    mediaViewerContainer: {
+        flex: 1,
     },
     footerContainer: {
         width: '100%',

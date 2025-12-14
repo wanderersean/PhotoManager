@@ -4,7 +4,7 @@ import TitleEditor from "./TitleEditor";
 import TagEditor from "./TagEditor";
 import { Card } from 'react-native-paper';
 
-export default function MediaViewer({medias}) {
+export default function MediaViewer({medias, style}) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [titles, setTitles] = useState(medias.map(() => '')); // 为每张图片存储标题
     const [tags, setTags] = useState(medias.map(() => [])); // 为每张图片存储标签
@@ -81,7 +81,7 @@ export default function MediaViewer({medias}) {
     });
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, style]}>
             {medias.length > 0 ? (
                 <>
                     {/* 缩略图卡片区域 */}
@@ -125,6 +125,11 @@ export default function MediaViewer({medias}) {
                     <Card 
                         {...imageCardPanResponder.panHandlers}
                         style={styles.imageDetailCard}>
+                        {/* 记录标题 */}
+                        <View style={styles.recordTitleContainer}>
+                            <Text style={styles.recordTitle}>记录</Text>
+                        </View>
+                        
                         {/* 标题和标签编辑区域 */}
                         <View style={styles.editorSection}>
                             <TitleEditor 
@@ -159,7 +164,7 @@ export default function MediaViewer({medias}) {
 const styles = StyleSheet.create({
     container: {
         width: '100%',
-        height: '100%',
+        height: '100%', // 使用100%高度，由父容器控制
         backgroundColor: '#f0f0f0',
     },
     thumbnailCard: {
@@ -207,11 +212,19 @@ const styles = StyleSheet.create({
     },
     imageDetailCard: {
         flex: 1,
-        marginHorizontal: 10,
-        marginVertical: 10,
+        margin: 10,
         elevation: 4,
         borderRadius: 8,
         overflow: 'hidden',
+    },
+    recordTitleContainer: {
+        padding: 10,
+        backgroundColor: '#e0e0e0',
+    },
+    recordTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        textAlign: 'left',
     },
     editorSection: {
         backgroundColor: '#f0f0f0',
@@ -220,11 +233,12 @@ const styles = StyleSheet.create({
     mainImageContainer: {
         flex: 1,
         width: '100%',
-        minHeight: 200, // 确保容器有最小高度
+        minHeight: 200,
     },
     mainImage: {
         width: '100%',
         height: '100%',
+        resizeMode: 'contain',
     },
     emptyContainer: {
         flex: 1,
