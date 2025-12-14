@@ -2,6 +2,7 @@ import React, {useState, useRef} from 'react';
 import {View, StyleSheet, Text, ScrollView, TouchableOpacity, Image, PanResponder} from 'react-native';
 import TitleEditor from "./TitleEditor";
 import TagEditor from "./TagEditor";
+import { Card } from 'react-native-paper';
 
 export default function MediaViewer({medias}) {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -67,32 +68,40 @@ export default function MediaViewer({medias}) {
         <View style={styles.container}>
             {medias.length > 0 ? (
                 <>
-                    {/* 上方20%缩略图区域 */}
-                    <View style={styles.thumbnailContainer}>
-                        <ScrollView 
-                            ref={scrollViewRef}
-                            horizontal={true}
-                            showsHorizontalScrollIndicator={false}
-                            contentContainerStyle={styles.thumbnailScrollContainer}
-                        >
-                            {imageSources.map((image, index) => (
-                                <TouchableOpacity 
-                                    key={index}
-                                    style={[
-                                        styles.thumbnailWrapper,
-                                        currentIndex === index && styles.selectedThumbnailWrapper
-                                    ]}
-                                    onPress={() => handleImageSelect(index)}
-                                >
-                                    <Image 
-                                        source={image} 
-                                        style={styles.thumbnail}
-                                        resizeMode="cover"
-                                    />
-                                </TouchableOpacity>
-                            ))}
-                        </ScrollView>
-                    </View>
+                    {/* 缩略图卡片区域 */}
+                    <Card style={styles.thumbnailCard}>
+                        <View style={styles.thumbnailTitleContainer}>
+                            <Text style={styles.thumbnailTitle}>缩略图</Text>
+                            <Text style={styles.imageCountText}>当前是第 {currentIndex + 1}/{medias.length} 张图片</Text>
+                        </View>
+                        
+                        {/* 缩略图区域 */}
+                        <View style={styles.thumbnailContainer}>
+                            <ScrollView 
+                                ref={scrollViewRef}
+                                horizontal={true}
+                                showsHorizontalScrollIndicator={false}
+                                contentContainerStyle={styles.thumbnailScrollContainer}
+                            >
+                                {imageSources.map((image, index) => (
+                                    <TouchableOpacity 
+                                        key={index}
+                                        style={[
+                                            styles.thumbnailWrapper,
+                                            currentIndex === index && styles.selectedThumbnailWrapper
+                                        ]}
+                                        onPress={() => handleImageSelect(index)}
+                                    >
+                                        <Image 
+                                            source={image} 
+                                            style={styles.thumbnail}
+                                            resizeMode="cover"
+                                        />
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
+                        </View>
+                    </Card>
                     
                     {/* 下方80%大图展示区域 */}
                     <View style={styles.viewerContainer}>
@@ -136,13 +145,34 @@ const styles = StyleSheet.create({
         height: '50%',
         backgroundColor: '#f0f0f0',
     },
+    thumbnailCard: {
+        margin: 10,
+        elevation: 4,
+        borderRadius: 8,
+        overflow: 'hidden',
+    },
+    thumbnailTitleContainer: {
+        padding: 10,
+        backgroundColor: '#e0e0e0',
+    },
+    thumbnailTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        textAlign: 'left', // 左对齐
+        marginBottom: 5,
+    },
+    imageCountText: {
+        fontSize: 12,
+        color: '#666',
+        textAlign: 'left', // 左对齐
+    },
     thumbnailContainer: {
-        height: '20%', // 占据20%的高度
+        height: 80, // 固定高度，确保缩略图完全显示
         backgroundColor: '#e0e0e0',
     },
     thumbnailScrollContainer: {
         paddingHorizontal: 10,
-        paddingVertical: 5,
+        paddingVertical: 10, // 增加垂直内边距
         alignItems: 'center',
     },
     thumbnailWrapper: {
@@ -159,7 +189,7 @@ const styles = StyleSheet.create({
         height: 60,
     },
     viewerContainer: {
-        height: '80%', // 占据80%的高度
+        flex: 1, // 使用flex布局，占据剩余空间
         backgroundColor: '#000',
         flexDirection: 'column',
     },
