@@ -48,8 +48,24 @@ export default function MediaViewer({medias}) {
         setTags(newTagsArray);
     };
 
-    // Create PanResponder for swipe gestures
-    const panResponder = PanResponder.create({
+    // Create PanResponder for swipe gestures on thumbnails
+    const thumbnailPanResponder = PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onPanResponderRelease: (evt, gestureState) => {
+            const { dx } = gestureState;
+            // Swipe right (previous image)
+            if (dx > 50 && currentIndex > 0) {
+                handleImageSelect(currentIndex - 1);
+            }
+            // Swipe left (next image)
+            else if (dx < -50 && currentIndex < medias.length - 1) {
+                handleImageSelect(currentIndex + 1);
+            }
+        },
+    });
+
+    // Create PanResponder for swipe gestures on main image card
+    const imageCardPanResponder = PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onPanResponderRelease: (evt, gestureState) => {
             const { dx } = gestureState;
@@ -76,7 +92,9 @@ export default function MediaViewer({medias}) {
                         </View>
                         
                         {/* 缩略图区域 */}
-                        <View style={styles.thumbnailContainer}>
+                        <View 
+                            {...thumbnailPanResponder.panHandlers}
+                            style={styles.thumbnailContainer}>
                             <ScrollView 
                                 ref={scrollViewRef}
                                 horizontal={true}
@@ -103,9 +121,11 @@ export default function MediaViewer({medias}) {
                         </View>
                     </Card>
                     
-                    {/* 下方80%大图展示区域 */}
-                    <View style={styles.viewerContainer}>
-                        {/* 标题和标签编辑区域 - 不再重叠 */}
+                    {/* 下方图片详情卡片区域 */}
+                    <Card 
+                        {...imageCardPanResponder.panHandlers}
+                        style={styles.imageDetailCard}>
+                        {/* 标题和标签编辑区域 */}
                         <View style={styles.editorSection}>
                             <TitleEditor 
                                 title={titles[currentIndex] || ''} 
@@ -118,17 +138,14 @@ export default function MediaViewer({medias}) {
                         </View>
                         
                         {/* 图片展示区域 */}
-                        <View 
-                            {...panResponder.panHandlers}
-                            style={styles.mainImageContainer}
-                        >
+                        <View style={styles.mainImageContainer}>
                             <Image 
                                 source={imageSources[currentIndex]} 
                                 style={styles.mainImage}
                                 resizeMode="contain"
                             />
                         </View>
-                    </View>
+                    </Card>
                 </>
             ) : (
                 <View style={styles.emptyContainer}>
@@ -142,7 +159,7 @@ export default function MediaViewer({medias}) {
 const styles = StyleSheet.create({
     container: {
         width: '100%',
-        height: '50%',
+        height: '100%',
         backgroundColor: '#f0f0f0',
     },
     thumbnailCard: {
@@ -188,10 +205,13 @@ const styles = StyleSheet.create({
         width: 60,
         height: 60,
     },
-    viewerContainer: {
-        flex: 1, // 使用flex布局，占据剩余空间
-        backgroundColor: '#000',
-        flexDirection: 'column',
+    imageDetailCard: {
+        flex: 1,
+        marginHorizontal: 10,
+        marginVertical: 10,
+        elevation: 4,
+        borderRadius: 8,
+        overflow: 'hidden',
     },
     editorSection: {
         backgroundColor: '#f0f0f0',
@@ -200,6 +220,7 @@ const styles = StyleSheet.create({
     mainImageContainer: {
         flex: 1,
         width: '100%',
+        minHeight: 200, // 确保容器有最小高度
     },
     mainImage: {
         width: '100%',
