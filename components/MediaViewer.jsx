@@ -144,6 +144,7 @@ export default function MediaViewer({medias, style}) {
                             <TagEditor
                                 tags={tags[currentIndex] || []}
                                 setTags={handleTagsChange}
+                                key={currentIndex}
                             />
                         </View>
 
