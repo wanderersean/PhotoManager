@@ -96,13 +96,13 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#fff',
-        marginBottom: 20,
+        marginBottom: 0, // 去掉底部边距，贴牢底部
     },
     button: {
-        backgroundColor: 'blue',
+        backgroundColor: '#2196F3', // 修改为普通按钮颜色
         paddingVertical: 15,
         borderRadius: 30,
-        borderWidth: 3,
+        borderWidth: 0, // 去掉边框宽度
         width: '100%',
         alignItems: 'center',
         // 添加overflow隐藏以确保遮罩不会超出边界
