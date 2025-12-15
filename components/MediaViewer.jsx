@@ -2,7 +2,7 @@ import React, {useState, useRef} from 'react';
 import {View, StyleSheet, Text, ScrollView, TouchableOpacity, Image, PanResponder} from 'react-native';
 import TitleEditor from "./TitleEditor";
 import TagEditor from "./TagEditor";
-import { Card, Divider } from 'react-native-paper';
+import {Card, Divider} from 'react-native-paper';
 
 export default function MediaViewer({medias, style}) {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -52,7 +52,7 @@ export default function MediaViewer({medias, style}) {
     const thumbnailPanResponder = PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onPanResponderRelease: (evt, gestureState) => {
-            const { dx } = gestureState;
+            const {dx} = gestureState;
             // Swipe right (previous image)
             if (dx > 50 && currentIndex > 0) {
                 handleImageSelect(currentIndex - 1);
@@ -68,7 +68,7 @@ export default function MediaViewer({medias, style}) {
     const imageCardPanResponder = PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onPanResponderRelease: (evt, gestureState) => {
-            const { dx } = gestureState;
+            const {dx} = gestureState;
             // Swipe right (previous image)
             if (dx > 50 && currentIndex > 0) {
                 handleImageSelect(currentIndex - 1);
@@ -88,24 +88,25 @@ export default function MediaViewer({medias, style}) {
                     <Card style={styles.thumbnailCard}>
                         <View style={styles.thumbnailTitleContainer}>
                             <Text style={styles.thumbnailTitle}>缩略图</Text>
-                            <Text style={styles.imageCountText}>当前是第 {currentIndex + 1}/{medias.length} 张图片</Text>
+                            <Text
+                                style={styles.imageCountText}>当前是第 {currentIndex + 1}/{medias.length} 张图片</Text>
                         </View>
-                        
+
                         {/* 添加Divider组件实现图片与标题的隔离 */}
-                        <Divider />
-                        
+                        <Divider/>
+
                         {/* 缩略图区域 */}
-                        <View 
+                        <View
                             {...thumbnailPanResponder.panHandlers}
                             style={styles.thumbnailContainer}>
-                            <ScrollView 
+                            <ScrollView
                                 ref={scrollViewRef}
                                 horizontal={true}
                                 showsHorizontalScrollIndicator={false}
                                 contentContainerStyle={styles.thumbnailScrollContainer}
                             >
                                 {imageSources.map((image, index) => (
-                                    <TouchableOpacity 
+                                    <TouchableOpacity
                                         key={index}
                                         style={[
                                             styles.thumbnailWrapper,
@@ -113,8 +114,8 @@ export default function MediaViewer({medias, style}) {
                                         ]}
                                         onPress={() => handleImageSelect(index)}
                                     >
-                                        <Image 
-                                            source={image} 
+                                        <Image
+                                            source={image}
                                             style={styles.thumbnail}
                                             resizeMode="cover"
                                         />
@@ -123,36 +124,40 @@ export default function MediaViewer({medias, style}) {
                             </ScrollView>
                         </View>
                     </Card>
-                    
+
                     {/* 下方图片详情卡片区域 */}
-                    <Card 
+                    <Card
                         {...imageCardPanResponder.panHandlers}
-                        style={styles.imageDetailCard}>
+                        style={styles.imageDetailCard} contentStyle={{flex: 1}}
+                    >
                         {/* 记录标题 */}
                         <View style={styles.recordTitleContainer}>
                             <Text style={styles.recordTitle}>记录</Text>
                         </View>
-                        
+
                         {/* 标题和标签编辑区域 */}
                         <View style={styles.editorSection}>
-                            <TitleEditor 
-                                title={titles[currentIndex] || ''} 
+                            <TitleEditor
+                                title={titles[currentIndex] || ''}
                                 onSave={handleTitleChange}
                             />
-                            <TagEditor 
-                                tags={tags[currentIndex] || []} 
+                            <TagEditor
+                                tags={tags[currentIndex] || []}
                                 setTags={handleTagsChange}
                             />
                         </View>
-                        
-                        {/* 图片展示区域 */}
+
+                        {/* 图片展示区域 - 实现垂直居中 */}
                         <View style={styles.mainImageContainer}>
-                            <Image 
-                                source={imageSources[currentIndex]} 
-                                style={styles.mainImage}
-                                resizeMode="contain"
-                            />
+                            <View style={styles.imageCenterContainer}>
+                                <Image
+                                    source={imageSources[currentIndex]}
+                                    style={styles.mainImage}
+                                    resizeMode="contain"
+                                />
+                            </View>
                         </View>
+
                     </Card>
                 </>
             ) : (
@@ -234,13 +239,17 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     mainImageContainer: {
-        flex: 1,
+        flex: 1, // 正确设置flex属性
         width: '100%',
-        minHeight: 200,
+    },
+    imageCenterContainer: {
+        flex: 1,
+        justifyContent: 'center', // 垂直居中
+        alignItems: 'center', // 水平居中
     },
     mainImage: {
-        width: '100%',
-        height: '100%',
+        maxWidth: '100%',
+        maxHeight: '100%',
         resizeMode: 'contain',
     },
     emptyContainer: {

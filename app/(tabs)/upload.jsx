@@ -52,14 +52,16 @@ export default function Upload() {
 
     return (
         <View style={styles.container}>
-            <ProgressBar progress={progress}></ProgressBar>
+            {/*<ProgressBar progress={progress}></ProgressBar>*/}
 
             <View style={styles.mediaViewerContainer}>
                 <MediaViewer medias={files}></MediaViewer>
             </View>
 
-            <SubmitButton enabled={!isUploading} onPress={onSubmit}
-                          style={styles.submitButtonContainer}></SubmitButton>
+            <View style={styles.submitButtonContainer}>
+                <SubmitButton enabled={!isUploading} onPress={onSubmit}
+                              style={styles.submitButtonContainer}></SubmitButton>
+            </View>
 
         </View>
     )
@@ -69,7 +71,6 @@ export default function Upload() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'red',
         alignItems: 'center',
         justifyContent: 'space-between',
     },
