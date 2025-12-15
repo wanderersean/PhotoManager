@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     textInput: {
-        height: 40,
+        height: 30, // 缩短高度从40到30
         fontSize: 14,
     }
 })
