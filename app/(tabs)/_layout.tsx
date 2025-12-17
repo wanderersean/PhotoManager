@@ -15,6 +15,7 @@ export default function Layout() {
 
             <Tabs.Screen name="index" options={{
                 title: '查看',
+                headerShown: false,
                 tabBarIcon: ({ color, focused }) => {
                     return <Ionicons name={focused ? "home-sharp" : "home-outline"} size={20} color={color} />
                 }
@@ -30,6 +31,7 @@ export default function Layout() {
             }} />
             
             <Tabs.Screen name="edit" options={{
+                headerShown: false,
                 href: null // 隐藏此页面在tab栏中显示
             }} />
         </Tabs>

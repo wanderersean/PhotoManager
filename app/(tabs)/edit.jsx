@@ -9,7 +9,7 @@ export default function EditPhotoScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { photo } = params;
-  const scrollRef = useRef();
+  const scrollRef = useRef(null);
   
   // 解析传入的照片数据
   const parsedPhoto = photo ? JSON.parse(photo) : null;
@@ -90,13 +90,6 @@ export default function EditPhotoScreen() {
             onChangeText={setTitle}
             mode="outlined"
             style={styles.input}
-            // 添加焦点处理
-            onFocus={() => {
-              // 延迟执行以确保键盘完全弹出
-              setTimeout(() => {
-                scrollRef.current?.scrollToFocusedInput();
-              }, 100);
-            }}
           />
 
           {/* 标签编辑器 */}

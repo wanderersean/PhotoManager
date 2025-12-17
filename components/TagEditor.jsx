@@ -1,4 +1,4 @@
-import {View, StyleSheet} from "react-native";
+import {View, StyleSheet, Text, TouchableOpacity} from "react-native";
 import Tags from "react-native-tags";
 
 export default function TagEditor({tags, setTags}) {
@@ -21,6 +21,8 @@ export default function TagEditor({tags, setTags}) {
                 inputStyle={{backgroundColor: "white", borderRadius: 10}}
                 // 当标签数量变化时，不自动失焦
                 disableOnScroll={true}
+                // 禁用有问题的标签渲染功能，使用默认渲染
+                renderTag={undefined}
             />
         </View>
     )

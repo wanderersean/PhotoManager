@@ -77,10 +77,12 @@ export default function Index() {
   const handlePhotoPress = (photo) => {
     // 点击照片查看详情或全屏显示
     console.log('查看照片:', photo.title);
+    handleEditPress(photo)
   };
 
   const handleEditPress = (photo) => {
     // 导航到编辑页面
+    console.log('编辑照片:', photo.title)
     router.push({
       pathname: '/(tabs)/edit',
       params: { photo: JSON.stringify(photo) }
@@ -93,7 +95,7 @@ export default function Index() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container]}>
       <PhotoGrid
         photos={mockPhotos}
         onPhotoPress={handlePhotoPress}
