@@ -57,7 +57,7 @@ export default function EditPhotoScreen() {
 
   return (
     <View style={styles.container}>
-      <Appbar.Header>
+      <Appbar.Header statusBarHeight={0}>
         <Appbar.BackAction onPress={() => router.back()} />
         <Appbar.Content title="编辑照片" />
         <Appbar.Action icon="check" onPress={handleSave} />
@@ -144,11 +144,11 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 16,
+    padding: 8,
   },
   imagePreview: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   image: {
     width: 200,
