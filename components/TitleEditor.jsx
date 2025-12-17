@@ -22,6 +22,9 @@ export default function TitleEditor({title, onSave}) {
                         onPress={() => onSave('')} // 清除标题
                     /> : null
                 }
+                // 添加键盘相关属性
+                blurOnSubmit={true}
+                returnKeyType="done"
             />
         </View>
     )

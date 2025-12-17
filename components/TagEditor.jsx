@@ -7,7 +7,10 @@ export default function TagEditor({tags, setTags}) {
             <Tags
                 initialText={''}
                 textInputProps={{
-                    placeholder: "自定义标签，空格或逗号结尾"
+                    placeholder: "自定义标签，空格或逗号结尾",
+                    // 添加一些属性来改善键盘体验
+                    blurOnSubmit: false,
+                    returnKeyType: "done"
                 }}
                 createTagOnString={[",", "，", ' ', '\r\n']}
                 initialTags={tags || []} // 确保tags始终是一个数组
@@ -16,6 +19,8 @@ export default function TagEditor({tags, setTags}) {
                 }}
                 containerStyle={{justifyContent: "space"}}
                 inputStyle={{backgroundColor: "white", borderRadius: 10}}
+                // 当标签数量变化时，不自动失焦
+                disableOnScroll={true}
             />
         </View>
     )
@@ -24,5 +29,6 @@ export default function TagEditor({tags, setTags}) {
 const styles = StyleSheet.create({
     tagContainer: {
         alignItems: 'center',
+        minHeight: 60, // 确保有足够的空间显示标签
     },
 });
