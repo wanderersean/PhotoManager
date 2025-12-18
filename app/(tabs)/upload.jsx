@@ -1,21 +1,21 @@
 import {upload} from '@/lib/upload'
 import {useShareIntentContext} from "expo-share-intent"
-import {useEffect, useRef, useState} from "react"
-import {Dimensions, StyleSheet, View, Text, TextInput} from "react-native"
+import React, {useState, useRef} from "react"
+import {View, StyleSheet, Alert, Image} from "react-native"
 import {KeyboardAwareScrollView} from "react-native-keyboard-aware-scroll-view"
 import Toast from 'react-native-toast-message'
-import {SafeAreaView} from 'react-native-safe-area-context'
+import {Appbar, TextInput, Button, Snackbar} from 'react-native-paper'
 
 import ProgressBar from '../../components/ProgressBar'
 import SubmitButton from "../../components/SubmitButton";
-import TitleEditor from "../../components/TitleEditor";
 import TagEditor from "../../components/TagEditor";
 import useIntentFiles from "../../lib/intent";
 import MediaViewer from "../../components/MediaViewer";
-import {Card, Divider} from "react-native-paper";
-
+import AppHeaderForUpload from "../../components/AppHeaderForUpload";
 
 export default function Upload() {
+    const scrollRef = useRef(null);
+    
     const onSubmit = async () => {
         try {
             setIsUploading(true)
@@ -30,13 +30,19 @@ export default function Upload() {
         }
     }
 
-
     const [progress, setProgress] = useState(0)
     let files = useIntentFiles()
-    const [title, setTitle] = useState('')
     const [tags, setTags] = useState([]) // init tags
+    const [snackbarVisible, setSnackbarVisible] = useState(false)
+    const [snackbarMessage, setSnackbarMessage] = useState('')
 
     const [isUploading, setIsUploading] = useState(false)
+
+    // 显示提示信息
+    const showSnackbar = (message) => {
+        setSnackbarMessage(message);
+        setSnackbarVisible(true);
+    };
 
     files = [
         require("../../assets/images/a.png"),
@@ -52,17 +58,45 @@ export default function Upload() {
 
     return (
         <View style={styles.container}>
-            {/*<ProgressBar progress={progress}></ProgressBar>*/}
+            <AppHeaderForUpload title="上传照片" />
+            
+            <KeyboardAwareScrollView 
+                style={styles.content}
+                keyboardShouldPersistTaps="handled"
+                enableOnAndroid={true}
+                enableAutomaticScroll={true}
+                extraScrollHeight={20}
+                ref={scrollRef}
+                // 添加额外的键盘偏移量
+                extraHeight={30}
+            >
+                {/* 媒体预览 */}
+                <View style={styles.mediaPreview}>
+                    <MediaViewer medias={files}></MediaViewer>
+                </View>
 
-            <View style={styles.mediaViewerContainer}>
-                <MediaViewer medias={files}></MediaViewer>
+            </KeyboardAwareScrollView>
+
+            {/* 上传按钮 - 固定在底部 */}
+            <View style={styles.buttonContainer}>
+                <Button 
+                    mode="contained" 
+                    onPress={onSubmit}
+                    loading={isUploading}
+                    disabled={isUploading}
+                    style={styles.uploadButton}
+                >
+                    {isUploading ? '上传中...' : '上传照片'}
+                </Button>
             </View>
 
-            <View style={styles.submitButtonContainer}>
-                <SubmitButton enabled={!isUploading} onPress={onSubmit}
-                              style={styles.submitButtonContainer}></SubmitButton>
-            </View>
-
+            <Snackbar
+                visible={snackbarVisible}
+                onDismiss={() => setSnackbarVisible(false)}
+                duration={2000}
+            >
+                {snackbarMessage}
+            </Snackbar>
         </View>
     )
 }
@@ -71,42 +105,25 @@ export default function Upload() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: 'center',
-        justifyContent: 'space-between',
+        backgroundColor: '#fff',
     },
-
-
-    image: {},
-    text: {
-        color: 'white'
-    },
-
-    tagContainer: {
-        marginTop: 20,
-        alignItems: 'center',
-        paddingTop: 20,
-        paddingBottom: 20,
-        borderWidth: 1,
-        borderColor: 'blue',
-    },
-    submitButtonContainer: {
-        width: '100%',
-    },
-    mediaViewerContainer: {
+    content: {
         flex: 1,
+        padding: 8,
     },
-    footerContainer: {
-        width: '100%',
-        alignItems: "center",
+    mediaPreview: {
+        height: 300, // 固定高度以控制MediaViewer的高度
+        alignItems: 'center',
+        marginBottom: 10,
     },
-    hidden: {
-        display: 'none'
+    section: {
+        marginBottom: 20,
     },
-    buttonPressed: {},
-    divider: {
-        height: 1,
-        width: '100%',
-        backgroundColor: '#ccc',
-        marginVertical: 10,
+    buttonContainer: {
+        padding: 10,
+        backgroundColor: '#fff',
+    },
+    uploadButton: {
+        marginBottom: 10,
     },
 })

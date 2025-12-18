@@ -81,7 +81,7 @@ export default function MediaViewer({medias, style, onTitleChange, onTagsChange}
         },
     });
 
-    // Create PanResponder for swipe gestures on main image card
+    // Create PanResponder for swipe gestures on main image area
     const imageCardPanResponder = PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onPanResponderRelease: (evt, gestureState) => {
@@ -104,7 +104,6 @@ export default function MediaViewer({medias, style, onTitleChange, onTagsChange}
                     {/* 缩略图卡片区域 */}
                     <Card style={styles.thumbnailCard}>
                         <View style={styles.thumbnailTitleContainer}>
-                            <Text style={styles.thumbnailTitle}>缩略图</Text>
                             <Text
                                 style={styles.imageCountText}>当前是第 {currentIndex + 1}/{medias.length} 张图片</Text>
                         </View>
@@ -140,19 +139,8 @@ export default function MediaViewer({medias, style, onTitleChange, onTagsChange}
                                 ))}
                             </ScrollView>
                         </View>
-                    </Card>
-
-                    {/* 下方图片详情卡片区域 */}
-                    <Card
-                        {...imageCardPanResponder.panHandlers}
-                        style={styles.imageDetailCard} contentStyle={{flex: 1}}
-                    >
-                        {/* 记录标题 */}
-                        <View style={styles.recordTitleContainer}>
-                            <Text style={styles.recordTitle}>记录</Text>
-                        </View>
-
-                        {/* 标题和标签编辑区域 */}
+                        
+                        {/* 标题和标签编辑区域 - 提升到更靠近缩略图的位置 */}
                         <View style={styles.editorSection}>
                             <TitleEditor
                                 title={titles[currentIndex] || ''}
@@ -164,9 +152,11 @@ export default function MediaViewer({medias, style, onTitleChange, onTagsChange}
                                 key={currentIndex}
                             />
                         </View>
-
+                        
                         {/* 图片展示区域 - 实现垂直居中 */}
-                        <View style={styles.mainImageContainer}>
+                        <View 
+                            {...imageCardPanResponder.panHandlers}
+                            style={styles.mainImageContainer}>
                             <View style={styles.imageCenterContainer}>
                                 <Image
                                     source={imageSources[currentIndex]}
@@ -175,7 +165,6 @@ export default function MediaViewer({medias, style, onTitleChange, onTagsChange}
                                 />
                             </View>
                         </View>
-
                     </Card>
                 </>
             ) : (
@@ -190,7 +179,7 @@ export default function MediaViewer({medias, style, onTitleChange, onTagsChange}
 const styles = StyleSheet.create({
     container: {
         width: '100%',
-        height: '100%', // 使用100%高度，由父容器控制
+        height: '100%',
         backgroundColor: '#f0f0f0',
     },
     thumbnailCard: {
@@ -198,16 +187,11 @@ const styles = StyleSheet.create({
         elevation: 4,
         borderRadius: 8,
         overflow: 'hidden',
+        flex: 1,
     },
     thumbnailTitleContainer: {
         padding: 10,
         backgroundColor: '#e0e0e0',
-    },
-    thumbnailTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        textAlign: 'left', // 左对齐
-        marginBottom: 5,
     },
     imageCountText: {
         fontSize: 12,
@@ -236,29 +220,14 @@ const styles = StyleSheet.create({
         width: 60,
         height: 60,
     },
-    imageDetailCard: {
-        flex: 1,
-        margin: 10,
-        elevation: 4,
-        borderRadius: 8,
-        overflow: 'hidden',
-    },
-    recordTitleContainer: {
-        padding: 10,
-        backgroundColor: '#e0e0e0',
-    },
-    recordTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        textAlign: 'left',
-    },
     editorSection: {
         backgroundColor: '#f0f0f0',
         padding: 10,
     },
     mainImageContainer: {
-        flex: 1, // 正确设置flex属性
+        height: 150, // 固定高度而不是使用flex
         width: '100%',
+        marginBottom: 10,
     },
     imageCenterContainer: {
         flex: 1,
