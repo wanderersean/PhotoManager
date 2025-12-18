@@ -4,7 +4,6 @@ import Toast from 'react-native-toast-message';
 import {Dimensions, Text, StyleSheet} from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {StatusBar} from "expo-status-bar";
-import AppHeader from "@/components/AppHeader";
 import {PaperProvider} from 'react-native-paper';
 
 export default function RootLayout() {
@@ -22,12 +21,7 @@ export default function RootLayout() {
                 <SafeAreaView style={styles.container}>
                     <Stack
                         screenOptions={{
-                            header: (props) => (
-                                <AppHeader
-                                    title="Photo Manager"
-                                    showInput={props.route.name === 'search'} // 仅在搜索页面显示输入框
-                                />
-                            ),
+                            headerShown: false, // 移除默认的header
                         }}
                     >
                         <Stack.Screen name='(tabs)'></Stack.Screen>

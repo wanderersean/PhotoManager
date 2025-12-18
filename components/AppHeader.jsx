@@ -1,10 +1,22 @@
 import React from 'react';
-import { View, Text, StyleSheet, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 
-export default function AppHeader ({ title, showInput })  {
+export default function AppHeader ({ title, showInput, isEditMode, onEditPress, onCancelPress })  {
   return (
     <View style={styles.headerContainer}>
-      <Text style={styles.appTitle}>{title}</Text>
+      <View style={styles.headerTop}>
+        <Text style={styles.appTitle}>{title}</Text>
+        {isEditMode ? (
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity onPress={onEditPress} style={styles.editButton}>
+              <Text style={styles.editButtonText}>编辑</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={onCancelPress} style={styles.cancelButton}>
+              <Text style={styles.cancelButtonText}>退出</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
+      </View>
       {showInput && (
         <TextInput
           style={styles.input}
@@ -25,11 +37,37 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
   },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 5,
+  },
   appTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 5,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+  },
+  editButton: {
+    padding: 5,
+    marginRight: 10,
+  },
+  editButtonText: {
+    fontSize: 16,
+    color: '#007AFF',
+    fontWeight: 'bold',
+  },
+  cancelButton: {
+    padding: 5,
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    color: '#FF3B30',
+    fontWeight: 'bold',
   },
   input: {
     height: 25, // 减小高度

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { View, StyleSheet, Dimensions, Text, RefreshControl, FlatList } from 'react-native';
 import PhotoCard from './PhotoCard';
 
@@ -37,11 +37,35 @@ const groupPhotosByDate = (photos) => {
     });
 };
 
-export default function PhotoGrid({ photos, onPhotoPress, onFavoritePress }) {
+export default function PhotoGrid({ 
+  photos, 
+  onPhotoPress, 
+  onFavoritePress,
+  isSelectionMode,
+  selectedPhotos,
+  onPhotoSelect,
+  onPhotoLongPress
+}) {
   const [refreshing, setRefreshing] = useState(false);
   const [displayedPhotos, setDisplayedPhotos] = useState(photos.slice(0, 10)); // 初始显示10张照片
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [prevSelectionMode, setPrevSelectionMode] = useState(isSelectionMode); // 跟踪前一个选择模式状态
   
+  // 使用 useMemo 优化分组计算
+  const sections = useMemo(() => {
+    return groupPhotosByDate(displayedPhotos);
+  }, [displayedPhotos]);
+
+  // 当photos改变时，重置displayedPhotos
+  useEffect(() => {
+    setDisplayedPhotos(photos.slice(0, 10));
+  }, [photos]);
+
+  // 监听选择模式的变化
+  useEffect(() => {
+    setPrevSelectionMode(isSelectionMode);
+  }, [isSelectionMode]);
+
   // 下拉刷新
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -65,15 +89,12 @@ export default function PhotoGrid({ photos, onPhotoPress, onFavoritePress }) {
     }, 1000);
   }, [displayedPhotos.length, isLoadingMore, photos]);
 
-  // 将照片数据转换为适合展示的格式
-  const sections = groupPhotosByDate(displayedPhotos);
-
   // 处理滚动到底部
   const handleEndReached = () => {
     loadMorePhotos();
   };
 
-  const renderDateSection = ({ item: section }) => {
+  const renderDateSection = useCallback(({ item: section }) => {
     // 创建三个列数组
     const columns = [[], [], []];
     
@@ -93,21 +114,32 @@ export default function PhotoGrid({ photos, onPhotoPress, onFavoritePress }) {
         <View style={styles.columnsContainer}>
           {columns.map((columnPhotos, columnIndex) => (
             <View key={`column-${columnIndex}`} style={styles.column}>
-              {columnPhotos.map((photo) => (
-                <PhotoCard
-                  key={`photo-${photo.id}`}
-                  photo={photo}
-                  columnWidth={COLUMN_WIDTH}
-                  onPress={() => onPhotoPress(photo)}
-                  onFavoritePress={onFavoritePress}
-                />
-              ))}
+              {columnPhotos.map((photo) => {
+                const isSelected = isSelectionMode && selectedPhotos.some(p => p.id === photo.id);
+                return (
+                  <PhotoCard
+                    key={`photo-${photo.id}-${isSelected ? 'selected' : 'unselected'}`}
+                    photo={photo}
+                    columnWidth={COLUMN_WIDTH}
+                    onPress={() => {
+                      if (isSelectionMode) {
+                        onPhotoSelect(photo);
+                      } else {
+                        onPhotoPress(photo);
+                      }
+                    }}
+                    onFavoritePress={onFavoritePress}
+                    isSelected={isSelected}
+                    onLongPress={() => onPhotoLongPress(photo)}
+                  />
+                );
+              })}
             </View>
           ))}
         </View>
       </View>
     );
-  };
+  }, [isSelectionMode, selectedPhotos, onPhotoSelect, onPhotoPress, onPhotoLongPress, onFavoritePress, COLUMN_WIDTH]);
 
   return (
     <FlatList

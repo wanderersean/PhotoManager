@@ -1,7 +1,10 @@
-import { View, StyleSheet } from 'react-native'
+import { View, StyleSheet, Alert } from 'react-native'
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import PhotoGrid from '@/components/PhotoGrid';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import AppHeader from '@/components/AppHeader';
+import MultiSelectEditModal from '@/components/MultiSelectEditModal';
 
 // 模拟照片数据
 const mockPhotos = [
@@ -73,11 +76,41 @@ const mockPhotos = [
 export default function Index() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const [photos, setPhotos] = useState(mockPhotos);
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedPhotos, setSelectedPhotos] = useState([]);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
 
   const handlePhotoPress = (photo) => {
-    // 点击照片查看详情或全屏显示
-    console.log('查看照片:', photo.title);
-    handleEditPress(photo)
+    if (isSelectionMode) {
+      // 在选择模式下，点击照片切换其选择状态
+      togglePhotoSelection(photo);
+    } else {
+      // 点击照片查看详情或全屏显示
+      console.log('查看照片:', photo.title);
+      handleEditPress(photo);
+    }
+  };
+
+  const handlePhotoLongPress = (photo) => {
+    // 长按进入选择模式并选择该照片
+    if (!isSelectionMode) {
+      setIsSelectionMode(true);
+      setSelectedPhotos([photo]);
+    } else {
+      togglePhotoSelection(photo);
+    }
+  };
+
+  const togglePhotoSelection = (photo) => {
+    const isSelected = selectedPhotos.some(p => p.id === photo.id);
+    if (isSelected) {
+      // 取消选择
+      setSelectedPhotos(selectedPhotos.filter(p => p.id !== photo.id));
+    } else {
+      // 添加到选择列表
+      setSelectedPhotos([...selectedPhotos, photo]);
+    }
   };
 
   const handleEditPress = (photo) => {
@@ -93,15 +126,82 @@ export default function Index() {
     const action = photo.isFavorite ? '添加' : '取消';
     console.log(`已${action}收藏:`, photo.title);
     // 这里可以添加实际的收藏逻辑，比如更新状态或发送到服务器
+    
+    // 更新照片收藏状态
+    const updatedPhotos = photos.map(p => 
+      p.id === photo.id ? { ...p, isFavorite: !p.isFavorite } : p
+    );
+    setPhotos(updatedPhotos);
+  };
+
+  const exitSelectionMode = () => {
+    setIsSelectionMode(false);
+    setSelectedPhotos([]);
+  };
+
+  // 新增取消选择模式的函数
+  const handleCancelSelection = () => {
+    exitSelectionMode();
+  };
+
+  const openEditModal = () => {
+    if (selectedPhotos.length === 0) {
+      Alert.alert('提示', '请至少选择一张照片进行编辑');
+      return;
+    }
+    setIsEditModalVisible(true);
+  };
+
+  // 修改 onCloseModal 函数来确保退出选择模式
+  const onCloseModal = () => {
+    setIsEditModalVisible(false);
+    // 不再调用exitSelectionMode()，保持选择模式和选中状态
+    // exitSelectionMode();
+  };
+
+  const saveEditedPhotos = (updatedPhotos) => {
+    // 更新照片数据
+    const updatedPhotosMap = {};
+    updatedPhotos.forEach(photo => {
+      updatedPhotosMap[photo.id] = photo;
+    });
+    
+    const newPhotos = photos.map(photo => 
+      updatedPhotosMap[photo.id] ? updatedPhotosMap[photo.id] : photo
+    );
+    
+    setPhotos(newPhotos);
+    setIsEditModalVisible(false);
+    // 只有在保存后才退出选择模式
+    exitSelectionMode();
+    
+    Alert.alert('成功', '照片信息已更新');
   };
 
   return (
-    <View style={[styles.container]}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <AppHeader 
+        title="Photo Manager" 
+        isEditMode={isSelectionMode}
+        onEditPress={openEditModal}
+        onCancelPress={handleCancelSelection}
+      />
       <PhotoGrid
-        photos={mockPhotos}
+        photos={photos}
         onPhotoPress={handlePhotoPress}
-        onEditPress={handleEditPress}
+        onPhotoLongPress={handlePhotoLongPress}
         onFavoritePress={handleFavoritePress}
+        isSelectionMode={isSelectionMode}
+        selectedPhotos={selectedPhotos}
+        onPhotoSelect={togglePhotoSelection}
+      />
+      
+      {/* 多选编辑模态框 */}
+      <MultiSelectEditModal
+        isVisible={isEditModalVisible}
+        selectedPhotos={selectedPhotos}
+        onClose={onCloseModal}
+        onSave={saveEditedPhotos}
       />
     </View>
   );

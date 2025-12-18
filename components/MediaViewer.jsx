@@ -1,14 +1,21 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {View, StyleSheet, Text, ScrollView, TouchableOpacity, Image, PanResponder} from 'react-native';
 import TitleEditor from "./TitleEditor";
 import TagEditor from "./TagEditor";
 import {Card, Divider} from 'react-native-paper';
 
-export default function MediaViewer({medias, style}) {
+export default function MediaViewer({medias, style, onTitleChange, onTagsChange}) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [titles, setTitles] = useState(medias.map(() => '')); // 为每张图片存储标题
     const [tags, setTags] = useState(medias.map(() => [])); // 为每张图片存储标签
     const scrollViewRef = useRef(null);
+
+    // 当medias变化时，重新初始化titles和tags
+    useEffect(() => {
+        setTitles(medias.map(() => ''));
+        setTags(medias.map(() => []));
+        setCurrentIndex(0); // 重置当前索引
+    }, [medias]);
 
     // Convert media resources to image objects
     // Handle both local require() resources and URI strings
@@ -39,6 +46,11 @@ export default function MediaViewer({medias, style}) {
         const newTitles = [...titles];
         newTitles[currentIndex] = title;
         setTitles(newTitles);
+        
+        // 如果提供了onTitleChange回调，则调用它
+        if (onTitleChange) {
+            onTitleChange(currentIndex, title);
+        }
     };
 
     // 更新当前图片的标签
@@ -46,6 +58,11 @@ export default function MediaViewer({medias, style}) {
         const newTagsArray = [...tags];
         newTagsArray[currentIndex] = newTags;
         setTags(newTagsArray);
+        
+        // 如果提供了onTagsChange回调，则调用它
+        if (onTagsChange) {
+            onTagsChange(currentIndex, newTags);
+        }
     };
 
     // Create PanResponder for swipe gestures on thumbnails
