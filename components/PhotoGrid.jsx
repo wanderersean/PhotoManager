@@ -37,7 +37,7 @@ const groupPhotosByDate = (photos) => {
     });
 };
 
-export default function PhotoGrid({ photos, onPhotoPress }) {
+export default function PhotoGrid({ photos, onPhotoPress, onFavoritePress }) {
   const [refreshing, setRefreshing] = useState(false);
   const [displayedPhotos, setDisplayedPhotos] = useState(photos.slice(0, 10)); // 初始显示10张照片
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -99,6 +99,7 @@ export default function PhotoGrid({ photos, onPhotoPress }) {
                   photo={photo}
                   columnWidth={COLUMN_WIDTH}
                   onPress={() => onPhotoPress(photo)}
+                  onFavoritePress={onFavoritePress}
                 />
               ))}
             </View>

@@ -92,6 +92,7 @@ export default function Index() {
   const handleFavoritePress = (photo) => {
     const action = photo.isFavorite ? '添加' : '取消';
     console.log(`已${action}收藏:`, photo.title);
+    // 这里可以添加实际的收藏逻辑，比如更新状态或发送到服务器
   };
 
   return (

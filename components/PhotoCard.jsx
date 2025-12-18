@@ -1,12 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import { Card } from 'react-native-paper';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function PhotoCard({ 
   photo, 
   columnWidth, 
-  onPress
+  onPress,
+  onFavoritePress
 }) {
+  // 状态管理收藏状态
+  const [isFavorite, setIsFavorite] = useState(photo.isFavorite || false);
+
+  // 处理收藏点击事件
+  const handleFavoritePress = () => {
+    const newFavoriteState = !isFavorite;
+    setIsFavorite(newFavoriteState);
+    // 调用父组件传递的回调函数
+    if (onFavoritePress) {
+      onFavoritePress({ ...photo, isFavorite: newFavoriteState });
+    }
+  };
+
   // 确保照片资源正确处理
   const getImageSource = (media) => {
     // 如果是对象且有uri属性，直接返回
@@ -30,6 +45,17 @@ export default function PhotoCard({
           style={styles.image}
           resizeMode="cover"
         />
+        {/* 收藏图标 - 左上角 */}
+        <TouchableOpacity 
+          style={styles.favoriteIcon} 
+          onPress={handleFavoritePress}
+        >
+          <MaterialIcons 
+            name={isFavorite ? "favorite" : "favorite-border"} 
+            size={20} 
+            color={isFavorite ? "#FF6B6B" : "#FFFFFF"} 
+          />
+        </TouchableOpacity>
         {/* 标题显示在图片左下角 */}
         <View style={styles.titleOverlay}>
           <Text style={styles.title} numberOfLines={1}>
@@ -74,6 +100,15 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
+  },
+  favoriteIcon: {
+    position: 'absolute',
+    top: 5,
+    left: 5,
+    zIndex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: 15,
+    padding: 3,
   },
   titleOverlay: {
     position: 'absolute',
