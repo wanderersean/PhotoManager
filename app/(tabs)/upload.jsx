@@ -19,7 +19,6 @@ export default function Upload() {
     const onSubmit = async () => {
         try {
             setIsUploading(true)
-            console.log('哈哈哈哈')
             Toast.show({type: 'success', text1: '上传成功'})
         } catch (e) {
             Toast.show({type: 'error', text1: '上传失败，请重试'})
@@ -69,6 +68,7 @@ export default function Upload() {
                 ref={scrollRef}
                 // 添加额外的键盘偏移量
                 extraHeight={30}
+                contentContainerStyle={{flex: 1}}
             >
                 {/* 媒体预览 */}
                 <View style={styles.mediaPreview}>
@@ -109,18 +109,15 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        padding: 8,
     },
     mediaPreview: {
-        height: 300, // 固定高度以控制MediaViewer的高度
+        flex: 1,
         alignItems: 'center',
-        marginBottom: 10,
     },
     section: {
         marginBottom: 20,
     },
     buttonContainer: {
-        padding: 10,
         backgroundColor: '#fff',
     },
     uploadButton: {

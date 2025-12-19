@@ -4,7 +4,7 @@ import TitleEditor from "./TitleEditor";
 import TagEditor from "./TagEditor";
 import {Card, Divider} from 'react-native-paper';
 
-export default function MediaViewer({medias, style, onTitleChange, onTagsChange}) {
+export default function MediaViewer({medias, onTitleChange, onTagsChange}) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [titles, setTitles] = useState(medias.map(() => '')); // 为每张图片存储标题
     const [tags, setTags] = useState(medias.map(() => [])); // 为每张图片存储标签
@@ -98,11 +98,11 @@ export default function MediaViewer({medias, style, onTitleChange, onTagsChange}
     });
 
     return (
-        <View style={[styles.container, style]}>
+        <View style={[styles.container]}>
             {medias.length > 0 ? (
                 <>
                     {/* 缩略图卡片区域 */}
-                    <Card style={styles.thumbnailCard}>
+                    <Card style={styles.thumbnailCard} contentStyle={{flex: 1}}>
                         <View style={styles.thumbnailTitleContainer}>
                             <Text
                                 style={styles.imageCountText}>当前是第 {currentIndex + 1}/{medias.length} 张图片</Text>
@@ -225,9 +225,7 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     mainImageContainer: {
-        height: 150, // 固定高度而不是使用flex
-        width: '100%',
-        marginBottom: 10,
+        flex: 1,
     },
     imageCenterContainer: {
         flex: 1,
@@ -235,8 +233,9 @@ const styles = StyleSheet.create({
         alignItems: 'center', // 水平居中
     },
     mainImage: {
-        maxWidth: '100%',
-        maxHeight: '100%',
+        flex: 1,
+        width: '100%',
+        height: '100%',
         resizeMode: 'contain',
     },
     emptyContainer: {

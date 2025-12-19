@@ -149,10 +149,11 @@ const styles = StyleSheet.create({
   imagePreview: {
     alignItems: 'center',
     marginBottom: 10,
+    flex: 1,
   },
   image: {
-    width: 200,
-    height: 200,
+    width: '100%',
+    height: '100%',
     borderRadius: 8,
   },
   input: {
