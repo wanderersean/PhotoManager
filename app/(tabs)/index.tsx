@@ -196,7 +196,11 @@ export default function Index() {
     Alert.alert('成功', '照片信息已更新');
   };
 
-  const openImageEditModal = () => {
+  const openImageEditModal = (photoToEdit) => {
+    // 设置要编辑的照片
+    if (photoToEdit) {
+      setSelectedPhotos([photoToEdit]);
+    }
     setIsImageEditModalVisible(true);
   };
 
@@ -239,7 +243,7 @@ export default function Index() {
       {/* 图片编辑模态框 */}
       <MultiSelectEditModal
         isVisible={isImageEditModalVisible}
-        selectedPhotos={selectedPhoto ? [selectedPhoto] : []}
+        selectedPhotos={selectedPhotos}
         onClose={() => setIsImageEditModalVisible(false)}
         onSave={saveSinglePhoto}
       />

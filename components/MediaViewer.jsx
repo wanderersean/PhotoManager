@@ -12,8 +12,8 @@ export default function MediaViewer({medias, onTitleChange, onTagsChange}) {
 
     // 当medias变化时，重新初始化titles和tags
     useEffect(() => {
-        setTitles(medias.map(() => ''));
-        setTags(medias.map(() => []));
+        setTitles(medias.map(media => media.title || ''));
+        setTags(medias.map(media => media.tags || []));
         setCurrentIndex(0); // 重置当前索引
     }, [medias]);
 

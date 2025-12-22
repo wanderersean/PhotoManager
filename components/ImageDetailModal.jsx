@@ -99,7 +99,7 @@ export default function ImageDetailModal({
             onPress={toggleDetails} 
           />
           {onEdit && (
-            <Appbar.Action icon="pencil" onPress={onEdit} />
+            <Appbar.Action icon="pencil" onPress={() => onEdit(currentPhoto)} />
           )}
         </Appbar.Header>
 
