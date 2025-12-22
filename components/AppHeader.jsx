@@ -25,7 +25,7 @@ export default function AppHeader ({ title, showInput, isEditMode, onEditPress, 
       )}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   headerContainer: {

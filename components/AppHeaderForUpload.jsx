@@ -15,7 +15,7 @@ export default function AppHeaderForUpload ({ title, showInput })  {
       )}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   headerContainer: {

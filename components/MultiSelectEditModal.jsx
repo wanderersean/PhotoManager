@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {View, StyleSheet, Text, Modal} from 'react-native';
 import {Button} from 'react-native-paper';
-import MediaViewer from './MediaViewer';
+import MediaViewer from '@/components/MediaViewer';
 
 export default function MultiSelectEditModal({
                                                  isVisible,

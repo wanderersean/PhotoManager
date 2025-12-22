@@ -1,7 +1,7 @@
 import React, {useState, useRef, useEffect} from 'react';
 import {View, StyleSheet, Text, ScrollView, TouchableOpacity, Image, PanResponder} from 'react-native';
-import TitleEditor from "./TitleEditor";
-import TagEditor from "./TagEditor";
+import TitleEditor from "@/components/TitleEditor";
+import TagEditor from "@/components/TagEditor";
 import {Card, Divider} from 'react-native-paper';
 
 export default function MediaViewer({medias, onTitleChange, onTagsChange}) {

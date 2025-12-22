@@ -83,6 +83,7 @@ export default function Index() {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isImageDetailVisible, setIsImageDetailVisible] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [isImageEditModalVisible, setIsImageEditModalVisible] = useState(false);
 
   const handlePhotoPress = (photo) => {
     if (isSelectionMode) {
@@ -190,8 +191,13 @@ export default function Index() {
     
     setPhotos(newPhotos);
     setIsImageDetailVisible(false);
+    setIsImageEditModalVisible(false);
     
     Alert.alert('成功', '照片信息已更新');
+  };
+
+  const openImageEditModal = () => {
+    setIsImageEditModalVisible(true);
   };
 
   return (
@@ -224,7 +230,17 @@ export default function Index() {
       <ImageDetailModal
         isVisible={isImageDetailVisible}
         photo={selectedPhoto}
+        allPhotos={photos}
         onClose={() => setIsImageDetailVisible(false)}
+        onSave={saveSinglePhoto}
+        onEdit={openImageEditModal}
+      />
+      
+      {/* 图片编辑模态框 */}
+      <MultiSelectEditModal
+        isVisible={isImageEditModalVisible}
+        selectedPhotos={selectedPhoto ? [selectedPhoto] : []}
+        onClose={() => setIsImageEditModalVisible(false)}
         onSave={saveSinglePhoto}
       />
     </View>

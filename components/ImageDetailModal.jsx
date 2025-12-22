@@ -1,33 +1,87 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Text, Modal, Image, Alert } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, StyleSheet, Text, Modal, Image, Dimensions, ScrollView } from 'react-native';
 import { Appbar } from 'react-native-paper';
-import MultiSelectEditModal from './MultiSelectEditModal';
 
 export default function ImageDetailModal({ 
   isVisible, 
   photo, 
   onClose,
-  onSave 
+  onSave,
+  onEdit, // 添加onEdit属性
+  allPhotos = []
 }) {
   const [showDetails, setShowDetails] = useState(true);
-  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const scrollViewRef = useRef(null);
+  
+  // 当模态框显示且photo改变时，找到当前图片的索引
+  React.useEffect(() => {
+    if (isVisible && photo && allPhotos.length > 0) {
+      const index = allPhotos.findIndex(p => p.id === photo.id);
+      if (index !== -1) {
+        // 延迟设置索引以确保组件已完全渲染
+        setTimeout(() => {
+          setCurrentIndex(index);
+        }, 50);
+      }
+    } else if (!isVisible) {
+      // 当模态框关闭时，重置currentIndex
+      setCurrentIndex(0);
+    }
+  }, [isVisible, photo, allPhotos]);
+  
+  // 当currentIndex改变时，滚动到对应的图片
+  useEffect(() => {
+    if (scrollViewRef.current && allPhotos.length > 0 && currentIndex >= 0) {
+      // 使用requestAnimationFrame确保在下一帧执行
+      requestAnimationFrame(() => {
+        scrollViewRef.current?.scrollTo({
+          x: currentIndex * Dimensions.get('window').width,
+          y: 0,
+          animated: false
+        });
+      });
+    }
+  }, [currentIndex, allPhotos]);
 
   const toggleDetails = () => {
     setShowDetails(!showDetails);
   };
 
-  const handleEdit = () => {
-    setIsEditModalVisible(true);
+  // 处理滚动结束事件，更新当前图片索引
+  const handleScrollEnd = (event) => {
+    const contentOffset = event.nativeEvent.contentOffset;
+    const viewSize = event.nativeEvent.layoutMeasurement;
+    
+    // 计算当前页码
+    const pageNum = Math.floor(contentOffset.x / viewSize.width);
+    setCurrentIndex(pageNum);
   };
 
-  const saveEditedPhotos = (updatedPhotos) => {
-    // 只有一张照片
-    const updatedPhoto = updatedPhotos[0];
-    if (onSave) {
-      onSave(updatedPhoto);
+  // 获取当前显示的图片
+  const getCurrentPhoto = () => {
+    if (allPhotos.length > 0 && currentIndex >= 0 && currentIndex < allPhotos.length) {
+      return allPhotos[currentIndex];
     }
-    setIsEditModalVisible(false);
+    return photo;
   };
+
+  // 渲染图片列表
+  const renderImages = () => {
+    const photosToRender = allPhotos.length > 0 ? allPhotos : (photo ? [photo] : []);
+    
+    return photosToRender.map((p, index) => (
+      <View key={p.id || index} style={styles.imageContainer}>
+        <Image 
+          source={{ uri: p.uri }} 
+          style={styles.image}
+          resizeMode="contain"
+        />
+      </View>
+    ));
+  };
+
+  const currentPhoto = getCurrentPhoto();
 
   return (
     <Modal
@@ -44,22 +98,38 @@ export default function ImageDetailModal({
             icon={showDetails ? "eye-off" : "eye"} 
             onPress={toggleDetails} 
           />
-          <Appbar.Action icon="pencil" onPress={handleEdit} />
+          {onEdit && (
+            <Appbar.Action icon="pencil" onPress={onEdit} />
+          )}
         </Appbar.Header>
 
         {photo && (
           <View style={styles.content}>
-            <Image 
-              source={{ uri: photo.uri }} 
-              style={styles.image}
-              resizeMode="contain"
-            />
+            <ScrollView
+              ref={scrollViewRef}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={handleScrollEnd}
+              style={styles.scrollView}
+            >
+              {renderImages()}
+            </ScrollView>
             
-            {showDetails && (
+            {/* 页面指示器 */}
+            {allPhotos.length > 1 && (
+              <View style={styles.indicatorContainer}>
+                <Text style={styles.indicatorText}>
+                  {currentIndex + 1} / {allPhotos.length}
+                </Text>
+              </View>
+            )}
+            
+            {showDetails && currentPhoto && (
               <View style={styles.detailsOverlay}>
-                <Text style={styles.title}>{photo.title}</Text>
+                <Text style={styles.title}>{currentPhoto.title}</Text>
                 <View style={styles.tagsContainer}>
-                  {photo.tags && photo.tags.map((tag, index) => (
+                  {currentPhoto.tags && currentPhoto.tags.map((tag, index) => (
                     <View key={index} style={styles.tag}>
                       <Text style={styles.tagText}>{tag}</Text>
                     </View>
@@ -69,14 +139,6 @@ export default function ImageDetailModal({
             )}
           </View>
         )}
-        
-        {/* 编辑模态框 */}
-        <MultiSelectEditModal
-          isVisible={isEditModalVisible}
-          selectedPhotos={[photo]}
-          onClose={() => setIsEditModalVisible(false)}
-          onSave={saveEditedPhotos}
-        />
       </View>
     </Modal>
   );
@@ -91,9 +153,30 @@ const styles = StyleSheet.create({
     flex: 1,
     position: 'relative',
   },
+  scrollView: {
+    flex: 1,
+  },
+  imageContainer: {
+    width: Dimensions.get('window').width,
+    height: '100%',
+  },
   image: {
     width: '100%',
     height: '100%',
+  },
+  indicatorContainer: {
+    position: 'absolute',
+    top: 10,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  indicatorText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   detailsOverlay: {
     position: 'absolute',
