@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import AppHeader from '@/components/AppHeader';
 import MultiSelectEditModal from '@/components/MultiSelectEditModal';
+import ImageDetailModal from '@/components/ImageDetailModal';
 
 // 模拟照片数据
 const mockPhotos = [
@@ -80,6 +81,8 @@ export default function Index() {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState([]);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isImageDetailVisible, setIsImageDetailVisible] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
 
   const handlePhotoPress = (photo) => {
     if (isSelectionMode) {
@@ -88,7 +91,8 @@ export default function Index() {
     } else {
       // 点击照片查看详情或全屏显示
       console.log('查看照片:', photo.title);
-      handleEditPress(photo);
+      setSelectedPhoto(photo);
+      setIsImageDetailVisible(true);
     }
   };
 
@@ -178,6 +182,18 @@ export default function Index() {
     Alert.alert('成功', '照片信息已更新');
   };
 
+  const saveSinglePhoto = (updatedPhoto) => {
+    // 更新单张照片数据
+    const newPhotos = photos.map(photo => 
+      photo.id === updatedPhoto.id ? updatedPhoto : photo
+    );
+    
+    setPhotos(newPhotos);
+    setIsImageDetailVisible(false);
+    
+    Alert.alert('成功', '照片信息已更新');
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <AppHeader 
@@ -202,6 +218,14 @@ export default function Index() {
         selectedPhotos={selectedPhotos}
         onClose={onCloseModal}
         onSave={saveEditedPhotos}
+      />
+      
+      {/* 图片详情查看器 */}
+      <ImageDetailModal
+        isVisible={isImageDetailVisible}
+        photo={selectedPhoto}
+        onClose={() => setIsImageDetailVisible(false)}
+        onSave={saveSinglePhoto}
       />
     </View>
   );

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 
-export default function AppHeader ({ title, showInput, isEditMode, onEditPress, onCancelPress })  {
+export default function AppHeader ({ title, showInput, isEditMode, onEditPress, onCancelPress, onToggleDetails, showDetails })  {
   return (
     <View style={styles.headerContainer}>
       <View style={styles.headerTop}>
