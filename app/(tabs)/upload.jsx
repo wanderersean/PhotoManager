@@ -178,6 +178,7 @@ const styles = StyleSheet.create({
     },
     mediaPreview: {
         flex: 1,
+        width: '100%',
         alignItems: 'center',
     },
     section: {
