@@ -115,23 +115,11 @@ export default function Upload() {
         <View style={styles.container}>
             <AppHeaderForUpload title="上传照片" />
             
-            <KeyboardAwareScrollView 
-                style={styles.content}
-                keyboardShouldPersistTaps="handled"
-                enableOnAndroid={true}
-                enableAutomaticScroll={true}
-                extraScrollHeight={20}
-                ref={scrollRef}
-                // 添加额外的键盘偏移量
-                extraHeight={30}
-                contentContainerStyle={{flex: 1}}
-            >
                 {/* 媒体预览 */}
                 <View style={styles.mediaPreview}>
                     <MediaViewer medias={files}></MediaViewer>
                 </View>
 
-            </KeyboardAwareScrollView>
 
             {/* 上传按钮 - 固定在底部 */}
             <View style={styles.buttonContainer}>
