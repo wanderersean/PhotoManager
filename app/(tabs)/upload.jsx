@@ -1,11 +1,13 @@
 import {upload} from '@/lib/upload'
 import {useShareIntentContext} from "expo-share-intent"
-import React, {useState, useRef} from "react"
+import React, {useState, useRef, useEffect} from "react"
 import {View, StyleSheet, Alert, Image, TouchableOpacity, Text} from "react-native"
 import {KeyboardAwareScrollView} from "react-native-keyboard-aware-scroll-view"
 import Toast from 'react-native-toast-message'
 import {Appbar, TextInput, Button, Snackbar} from 'react-native-paper'
 import * as ImagePicker from 'expo-image-picker';
+import {useRouter, useFocusEffect, useNavigation} from 'expo-router';
+import {BackHandler} from 'react-native';
 
 import ProgressBar from '../../components/ProgressBar'
 import SubmitButton from "../../components/SubmitButton";
@@ -16,10 +18,36 @@ import AppHeaderForUpload from "../../components/AppHeaderForUpload";
 
 export default function Upload() {
     const scrollRef = useRef(null);
+    const router = useRouter();
+    const navigation = useNavigation();
     
     // 添加状态来管理当前显示的页面
     const [showPicker, setShowPicker] = useState(true); // 是否显示选择器页面
     const [selectedImages, setSelectedImages] = useState([]); // 选中的图片
+
+    // 使用 useFocusEffect 来处理返回按键
+    useFocusEffect(
+        React.useCallback(() => {
+            const onBackPress = () => {
+                // 如果当前在图片选择器页面，返回到上一页面
+                if (showPicker) {
+                    // 让系统处理默认返回行为
+                    return false;
+                } else {
+                    // 如果在上传页面，返回到选择器页面而不是离开Tab
+                    setShowPicker(true);
+                    setSelectedImages([]);
+                    return true; // 表示已处理返回事件
+                }
+            };
+
+            const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+            return () => {
+                subscription?.remove();
+            };
+        }, [showPicker])
+    );
     
     // 请求权限并打开图片选择器
     const openImagePicker = async () => {
@@ -120,7 +148,6 @@ export default function Upload() {
                     <MediaViewer medias={files}></MediaViewer>
                 </View>
 
-
             {/* 上传按钮 - 固定在底部 */}
             <View style={styles.buttonContainer}>
                 <Button 
@@ -166,7 +193,6 @@ const styles = StyleSheet.create({
     },
     mediaPreview: {
         flex: 1,
-        width: '100%',
         alignItems: 'center',
     },
     section: {
