@@ -1,14 +1,23 @@
-import React, {useState, useRef, useEffect} from 'react';
+import React, {useState, useRef, useEffect, useImperativeHandle} from 'react';
 import {View, StyleSheet, Text, ScrollView, TouchableOpacity, Image, PanResponder} from 'react-native';
 import TitleEditor from "@/components/TitleEditor";
 import TagEditor from "@/components/TagEditor";
 import {Card, Divider} from 'react-native-paper';
 
-export default function MediaViewer({medias, onTitleChange, onTagsChange}) {
+// 添加 forwardRef 以支持 ref
+const MediaViewer = React.forwardRef(({medias, onTitleChange, onTagsChange}, ref) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [titles, setTitles] = useState(medias.map(() => '')); // 为每张图片存储标题
     const [tags, setTags] = useState(medias.map(() => [])); // 为每张图片存储标签
     const scrollViewRef = useRef(null);
+
+    // 使用 useImperativeHandle 暴露组件方法给父组件
+    useImperativeHandle(ref, () => ({
+        getTitles: () => titles,
+        getTags: () => tags,
+        getCurrentIndex: () => currentIndex,
+        getAllData: () => ({ titles, tags, currentIndex })
+    }));
 
     // 当medias变化时，重新初始化titles和tags
     useEffect(() => {
@@ -174,7 +183,7 @@ export default function MediaViewer({medias, onTitleChange, onTagsChange}) {
             )}
         </View>
     );
-}
+});
 
 const styles = StyleSheet.create({
     container: {
@@ -244,3 +253,5 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     }
 });
+
+export default MediaViewer;

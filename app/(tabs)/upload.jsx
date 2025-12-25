@@ -1,4 +1,4 @@
-import {upload} from '@/lib/upload'
+import {upload, uploadFiles} from '@/lib/upload'
 import {useShareIntentContext} from "expo-share-intent"
 import React, {useState, useRef, useEffect} from "react"
 import {View, StyleSheet, Alert, Image, TouchableOpacity, Text} from "react-native"
@@ -20,6 +20,7 @@ export default function Upload() {
     const scrollRef = useRef(null);
     const router = useRouter();
     const navigation = useNavigation();
+    const mediaViewerRef = useRef(null); // 添加MediaViewer引用
     
     // 添加状态来管理当前显示的页面
     const [showPicker, setShowPicker] = useState(true); // 是否显示选择器页面
@@ -79,14 +80,42 @@ export default function Upload() {
     
     const onSubmit = async () => {
         try {
-            setIsUploading(true)
-            Toast.show({type: 'success', text1: '上传成功'})
+            setIsUploading(true);
+            
+            // 获取当前选择的图片列表
+            const filesToUpload = selectedImages.length > 0 ? selectedImages : [
+                require("../../assets/images/a.png"),
+                require("../../assets/images/icon.png"),
+                require("../../assets/images/react-logo.png"),
+                require("../../assets/images/a.png"),
+                require("../../assets/images/icon.png"),
+                require("../../assets/images/react-logo.png"),
+                require("../../assets/images/a.png"),
+                require("../../assets/images/icon.png"),
+                require("../../assets/images/react-logo.png"),
+            ];
+            
+            // 从MediaViewer获取标题和标签数据
+            let titles = [];
+            let tags = [];
+            
+            if (mediaViewerRef.current) {
+                titles = mediaViewerRef.current.getTitles();
+                tags = mediaViewerRef.current.getTags();
+            }
+            
+            // 使用封装的uploadFiles函数进行批量上传，传递标题和标签数据
+            await uploadFiles(filesToUpload, (progress) => {
+                setProgress(progress);
+            }, "sean", titles, tags); // 使用默认组信息，以及从组件获取的标题和标签
+            
+            Toast.show({type: 'success', text1: '所有照片上传成功!'});
         } catch (e) {
-            Toast.show({type: 'error', text1: '上传失败，请重试'})
-            throw e
+            Toast.show({type: 'error', text1: '上传失败，请重试'});
+            throw e;
         } finally {
-            setIsUploading(false)
-            setProgress(0)
+            setIsUploading(false);
+            setProgress(0);
         }
     }
 
@@ -145,8 +174,15 @@ export default function Upload() {
             
                 {/* 媒体预览 */}
                 <View style={styles.mediaPreview}>
-                    <MediaViewer medias={files}></MediaViewer>
+                    <MediaViewer ref={mediaViewerRef} medias={files}></MediaViewer>
                 </View>
+
+            {/* 进度条 */}
+            {isUploading && (
+                <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
+                    <ProgressBar progress={progress} />
+                </View>
+            )}
 
             {/* 上传按钮 - 固定在底部 */}
             <View style={styles.buttonContainer}>
