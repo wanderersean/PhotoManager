@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { View, StyleSheet, Dimensions, Text, RefreshControl, FlatList } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Dimensions, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import PhotoCard from './PhotoCard';
 
 const { width } = Dimensions.get('window');
@@ -18,7 +18,7 @@ const groupPhotosByDate = (photos) => {
     const key = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
     // 显示格式为 YYYY年M月D日
     const displayTitle = `${year}年${month}月${day}日`;
-    
+
     if (!grouped[key]) {
       grouped[key] = {
         title: displayTitle,
@@ -28,7 +28,7 @@ const groupPhotosByDate = (photos) => {
     }
     grouped[key].data.push(photo);
   });
-  
+
   // 转换为数组并按日期降序排列
   return Object.values(grouped)
     .sort((a, b) => {
@@ -37,28 +37,24 @@ const groupPhotosByDate = (photos) => {
     });
 };
 
-export default function PhotoGrid({ 
-  photos, 
-  onPhotoPress, 
+export default function PhotoGrid({
+  photos,
+  onPhotoPress,
   onFavoritePress,
   isSelectionMode,
   selectedPhotos,
   onPhotoSelect,
-  onPhotoLongPress
+  onPhotoLongPress,
+  onRefresh,
+  loadMorePhotos,
+  refreshing
 }) {
-  const [refreshing, setRefreshing] = useState(false);
-  const [displayedPhotos, setDisplayedPhotos] = useState(photos.slice(0, 10)); // 初始显示10张照片
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [prevSelectionMode, setPrevSelectionMode] = useState(isSelectionMode); // 跟踪前一个选择模式状态
-  
+
   // 使用 useMemo 优化分组计算
   const sections = useMemo(() => {
-    return groupPhotosByDate(displayedPhotos);
-  }, [displayedPhotos]);
-
-  // 当photos改变时，重置displayedPhotos
-  useEffect(() => {
-    setDisplayedPhotos(photos.slice(0, 10));
+    return groupPhotosByDate(photos);
   }, [photos]);
 
   // 监听选择模式的变化
@@ -66,38 +62,28 @@ export default function PhotoGrid({
     setPrevSelectionMode(isSelectionMode);
   }, [isSelectionMode]);
 
-  // 下拉刷新
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    // 模拟网络请求
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
-  }, []);
-
   // 加载更多照片
-  const loadMorePhotos = useCallback(() => {
-    if (isLoadingMore || displayedPhotos.length >= photos.length) return;
-    
+  const handleLoadMore = useCallback(() => {
+    console.log('handleLoadMore called');
+
+    if (isLoadingMore) return;
+    console.log('handleLoadMore called 2');
+
     setIsLoadingMore(true);
-    // 模拟网络请求
-    setTimeout(() => {
-      const currentLength = displayedPhotos.length;
-      const nextLength = Math.min(currentLength + 10, photos.length);
-      setDisplayedPhotos(photos.slice(0, nextLength));
-      setIsLoadingMore(false);
-    }, 1000);
-  }, [displayedPhotos.length, isLoadingMore, photos]);
+    loadMorePhotos && loadMorePhotos();
+    setIsLoadingMore(false);
+  }, [isLoadingMore, loadMorePhotos]);
 
   // 处理滚动到底部
   const handleEndReached = () => {
-    loadMorePhotos();
+    console.log('handleEndReached called');
+    handleLoadMore();
   };
 
   const renderDateSection = useCallback(({ item: section }) => {
     // 创建三个列数组
     const columns = [[], [], []];
-    
+
     // 将照片按顺序分配到三列中
     section.data.forEach((photo, index) => {
       columns[index % 3].push(photo);
@@ -109,7 +95,7 @@ export default function PhotoGrid({
         <View style={styles.dateHeader}>
           <Text style={styles.dateHeaderH2}>{section.title}</Text>
         </View>
-        
+
         {/* 三列照片布局 */}
         <View style={styles.columnsContainer}>
           {columns.map((columnPhotos, columnIndex) => (
@@ -148,7 +134,7 @@ export default function PhotoGrid({
       keyExtractor={(item) => item.sortKey}
       showsVerticalScrollIndicator={false}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} />
       }
       onEndReached={handleEndReached}
       onEndReachedThreshold={0.5}

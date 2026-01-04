@@ -1,24 +1,23 @@
-import { View, StyleSheet, TouchableOpacity } from "react-native";
-import { TextInput, IconButton } from 'react-native-paper';
-import React from "react";
+import { StyleSheet, View } from "react-native";
+import { TextInput } from 'react-native-paper';
 
-export default function TitleEditor({title, onSave}) {
+export default function TitleEditor({ title, onSave }) {
 
     return (
         <View style={styles.titleContainer}>
             <TextInput
-                label={'标题'}
+                label={''}
                 mode={'outlined'}
                 placeholder={'请输入标题'}
-                onChangeText={(text) =>{
+                onChangeText={(text) => {
                     onSave(text)
                 }}
                 value={title}
                 style={styles.textInput}
                 left={<TextInput.Icon icon="pencil" />} // 添加前置图标
                 right={title ? // 只有当有标题内容时才显示清除按钮
-                    <TextInput.Icon 
-                        icon="close" 
+                    <TextInput.Icon
+                        icon="close"
                         onPress={() => onSave('')} // 清除标题
                     /> : null
                 }

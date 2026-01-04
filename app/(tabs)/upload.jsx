@@ -1,30 +1,39 @@
-import {upload, uploadFiles} from '@/lib/upload'
-import {useShareIntentContext} from "expo-share-intent"
-import React, {useState, useRef, useEffect} from "react"
-import {View, StyleSheet, Alert, Image, TouchableOpacity, Text} from "react-native"
-import {KeyboardAwareScrollView} from "react-native-keyboard-aware-scroll-view"
+import { uploadFiles } from '@/lib/upload'
+import * as ImagePicker from 'expo-image-picker'
+import { useFocusEffect, useNavigation, useRouter } from 'expo-router'
+import { useShareIntentContext } from "expo-share-intent"
+import React, { useEffect, useRef, useState } from "react"
+import { Alert, BackHandler, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { Button, Snackbar } from 'react-native-paper'
 import Toast from 'react-native-toast-message'
-import {Appbar, TextInput, Button, Snackbar} from 'react-native-paper'
-import * as ImagePicker from 'expo-image-picker';
-import {useRouter, useFocusEffect, useNavigation} from 'expo-router';
-import {BackHandler} from 'react-native';
 
+import AppHeaderForUpload from "../../components/AppHeaderForUpload"
+import MediaViewer from "../../components/MediaViewer"
 import ProgressBar from '../../components/ProgressBar'
-import SubmitButton from "../../components/SubmitButton";
-import TagEditor from "../../components/TagEditor";
-import useIntentFiles from "../../lib/intent";
-import MediaViewer from "../../components/MediaViewer";
-import AppHeaderForUpload from "../../components/AppHeaderForUpload";
+import useIntentFiles from "../../lib/intent"
 
 export default function Upload() {
     const scrollRef = useRef(null);
     const router = useRouter();
     const navigation = useNavigation();
     const mediaViewerRef = useRef(null); // 添加MediaViewer引用
-    
+
     // 添加状态来管理当前显示的页面
     const [showPicker, setShowPicker] = useState(true); // 是否显示选择器页面
     const [selectedImages, setSelectedImages] = useState([]); // 选中的图片
+
+    // Get share intent files
+    const intentFiles = useIntentFiles();
+    const { hasShareIntent, resetShareIntent } = useShareIntentContext();
+
+    // Handle share intent files
+    useEffect(() => {
+        if (hasShareIntent && intentFiles.length > 0) {
+            console.log('[Upload] Share intent detected with files:', intentFiles.length);
+            setSelectedImages(intentFiles);
+            setShowPicker(false);
+        }
+    }, [hasShareIntent, intentFiles]);
 
     // 使用 useFocusEffect 来处理返回按键
     useFocusEffect(
@@ -49,7 +58,7 @@ export default function Upload() {
             };
         }, [showPicker])
     );
-    
+
     // 请求权限并打开图片选择器
     const openImagePicker = async () => {
         // 请求媒体库权限
@@ -58,60 +67,68 @@ export default function Upload() {
             Alert.alert('权限被拒绝', '需要访问相册权限才能选择图片');
             return;
         }
-        
+
         // 打开图片选择器
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ImagePicker.MediaTypeOptions.All,
             allowsMultipleSelection: true,
             quality: 0.8,
         });
-        
+
         if (!result.canceled && result.assets && result.assets.length > 0) {
             setSelectedImages(result.assets);
             setShowPicker(false); // 显示上传页面
         }
     };
-    
+
     // 取消上传，返回到选择页面
     const handleCancel = () => {
         setShowPicker(true);
         setSelectedImages([]);
+        // Reset share intent if it was from share
+        if (hasShareIntent && resetShareIntent) {
+            resetShareIntent();
+        }
     };
-    
+
     const onSubmit = async () => {
         try {
             setIsUploading(true);
-            
+
             // 获取当前选择的图片列表
-            const filesToUpload = selectedImages.length > 0 ? selectedImages : [
-                require("../../assets/images/a.png"),
-                require("../../assets/images/icon.png"),
-                require("../../assets/images/react-logo.png"),
-                require("../../assets/images/a.png"),
-                require("../../assets/images/icon.png"),
-                require("../../assets/images/react-logo.png"),
-                require("../../assets/images/a.png"),
-                require("../../assets/images/icon.png"),
-                require("../../assets/images/react-logo.png"),
-            ];
-            
+            const filesToUpload = selectedImages.length > 0 ? selectedImages : [];
+
             // 从MediaViewer获取标题和标签数据
             let titles = [];
             let tags = [];
-            
+
             if (mediaViewerRef.current) {
                 titles = mediaViewerRef.current.getTitles();
                 tags = mediaViewerRef.current.getTags();
             }
-            
+
             // 使用封装的uploadFiles函数进行批量上传，传递标题和标签数据
-            await uploadFiles(filesToUpload, (progress) => {
-                setProgress(progress);
+            let lastProgress = 0; // 跟踪上一次的进度,确保进度只增不减
+            await uploadFiles(filesToUpload, (newProgress) => {
+                // 确保进度只增不减
+                if (newProgress >= lastProgress) {
+                    setProgress(newProgress);
+                    lastProgress = newProgress;
+                }
             }, "sean", titles, tags); // 使用默认组信息，以及从组件获取的标题和标签
-            
-            Toast.show({type: 'success', text1: '所有照片上传成功!'});
+
+            Toast.show({ type: 'success', text1: '所有照片上传成功!' });
+
+            // Reset share intent after successful upload
+            if (hasShareIntent && resetShareIntent) {
+                resetShareIntent();
+            }
+
+            // Reset to picker view
+            setShowPicker(true);
+            setSelectedImages([]);
         } catch (e) {
-            Toast.show({type: 'error', text1: '上传失败，请重试'});
+            Toast.show({ type: 'error', text1: '上传失败，请重试' });
             throw e;
         } finally {
             setIsUploading(false);
@@ -120,7 +137,6 @@ export default function Upload() {
     }
 
     const [progress, setProgress] = useState(0)
-    let files = useIntentFiles()
     const [tags, setTags] = useState([]) // init tags
     const [snackbarVisible, setSnackbarVisible] = useState(false)
     const [snackbarMessage, setSnackbarMessage] = useState('')
@@ -138,11 +154,11 @@ export default function Upload() {
         return (
             <View style={styles.container}>
                 <AppHeaderForUpload title="上传照片" />
-                
+
                 <View style={styles.pickerContainer}>
                     <TouchableOpacity style={styles.logoButton} onPress={openImagePicker}>
-                        <Image 
-                            source={require('../../assets/images/icon.png')} 
+                        <Image
+                            source={require('../../assets/images/icon.png')}
                             style={styles.logo}
                             resizeMode="contain"
                         />
@@ -156,7 +172,7 @@ export default function Upload() {
     }
 
     // 否则显示上传页面
-    files = selectedImages.length > 0 ? selectedImages : [
+    const files = selectedImages.length > 0 ? selectedImages : [
         require("../../assets/images/a.png"),
         require("../../assets/images/icon.png"),
         require("../../assets/images/react-logo.png"),
@@ -171,11 +187,11 @@ export default function Upload() {
     return (
         <View style={styles.container}>
             <AppHeaderForUpload title="上传照片" />
-            
-                {/* 媒体预览 */}
-                <View style={styles.mediaPreview}>
-                    <MediaViewer ref={mediaViewerRef} medias={files}></MediaViewer>
-                </View>
+
+            {/* 媒体预览 */}
+            <View style={styles.mediaPreview}>
+                <MediaViewer ref={mediaViewerRef} medias={files}></MediaViewer>
+            </View>
 
             {/* 进度条 */}
             {isUploading && (
@@ -186,8 +202,8 @@ export default function Upload() {
 
             {/* 上传按钮 - 固定在底部 */}
             <View style={styles.buttonContainer}>
-                <Button 
-                    mode="contained" 
+                <Button
+                    mode="contained"
                     onPress={onSubmit}
                     loading={isUploading}
                     disabled={isUploading}
@@ -195,10 +211,10 @@ export default function Upload() {
                 >
                     {isUploading ? '上传中...' : '上传照片'}
                 </Button>
-                
+
                 {/* 添加取消按钮 */}
-                <Button 
-                    mode="outlined" 
+                <Button
+                    mode="outlined"
                     onPress={handleCancel}
                     style={styles.cancelButton}
                     labelStyle={styles.cancelButtonLabel}

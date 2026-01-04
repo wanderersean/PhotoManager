@@ -1,46 +1,50 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, Text, Modal, Image, Dimensions, ScrollView } from 'react-native';
+import { ResizeMode, Video } from 'expo-av';
+import React, { useEffect, useRef, useState } from 'react';
+import { Dimensions, FlatList, Image, Modal, StyleSheet, Text, View } from 'react-native';
 import { Appbar } from 'react-native-paper';
 
-export default function ImageDetailModal({ 
-  isVisible, 
-  photo, 
+const LOG_PREFIX = '[ImageDetailModal]';
+
+export default function ImageDetailModal({
+  isVisible,
+  photo,
   onClose,
-  onSave,
   onEdit, // 添加onEdit属性
   allPhotos = []
 }) {
   const [showDetails, setShowDetails] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollViewRef = useRef(null);
-  
+
   // 当模态框显示且photo改变时，找到当前图片的索引
   React.useEffect(() => {
-    if (isVisible && photo && allPhotos.length > 0) {
-      const index = allPhotos.findIndex(p => p.id === photo.id);
-      if (index !== -1) {
-        // 延迟设置索引以确保组件已完全渲染
-        setTimeout(() => {
-          setCurrentIndex(index);
-        }, 50);
+    if (isVisible && photo) {
+      if (allPhotos.length > 0) {
+        const index = allPhotos.findIndex(p => p.id === photo.id);
+        if (index !== -1) {
+          setTimeout(() => {
+            setCurrentIndex(index);
+          }, 50);
+        }
       }
     } else if (!isVisible) {
-      // 当模态框关闭时，重置currentIndex
       setCurrentIndex(0);
     }
   }, [isVisible, photo, allPhotos]);
-  
+
   // 当currentIndex改变时，滚动到对应的图片
   useEffect(() => {
-    if (scrollViewRef.current && allPhotos.length > 0 && currentIndex >= 0) {
-      // 使用requestAnimationFrame确保在下一帧执行
-      requestAnimationFrame(() => {
-        scrollViewRef.current?.scrollTo({
-          x: currentIndex * Dimensions.get('window').width,
-          y: 0,
-          animated: false
-        });
-      });
+    if (scrollViewRef.current && allPhotos.length > 0 && currentIndex >= 0 && currentIndex < allPhotos.length) {
+      setTimeout(() => {
+        try {
+          scrollViewRef.current?.scrollToIndex({
+            index: currentIndex,
+            animated: false
+          });
+        } catch (error) {
+          console.warn(`${LOG_PREFIX} scrollToIndex error:`, error);
+        }
+      }, 100);
     }
   }, [currentIndex, allPhotos]);
 
@@ -52,7 +56,7 @@ export default function ImageDetailModal({
   const handleScrollEnd = (event) => {
     const contentOffset = event.nativeEvent.contentOffset;
     const viewSize = event.nativeEvent.layoutMeasurement;
-    
+
     // 计算当前页码
     const pageNum = Math.floor(contentOffset.x / viewSize.width);
     setCurrentIndex(pageNum);
@@ -66,19 +70,45 @@ export default function ImageDetailModal({
     return photo;
   };
 
-  // 渲染图片列表
-  const renderImages = () => {
-    const photosToRender = allPhotos.length > 0 ? allPhotos : (photo ? [photo] : []);
-    
-    return photosToRender.map((p, index) => (
-      <View key={p.id || index} style={styles.imageContainer}>
-        <Image 
-          source={{ uri: p.uri }} 
-          style={styles.image}
-          resizeMode="contain"
-        />
+  // 渲染单个图片项
+  const renderItem = ({ item: p, index }) => {
+    return (
+      <View style={styles.imageContainer}>
+        {p.type === 'video' ? (
+          <Video
+            style={styles.image}
+            source={{ uri: p.uriRaw }}
+            useNativeControls
+            resizeMode={ResizeMode.CONTAIN}
+            isLooping={false}
+            shouldPlay={index === currentIndex} // Only play if it's the current item
+            posterSource={{ uri: p.uri }} // Use the thumbnail as poster
+            usePoster={true}
+            onError={(error) => {
+              console.error(`${LOG_PREFIX} Video load error:`, {
+                photoId: p.id,
+                uriRaw: p.uriRaw,
+                error
+              });
+            }}
+          />
+        ) : (
+          <Image
+            source={{ uri: p.uriRaw }}
+            style={styles.image}
+            resizeMode="contain"
+            onError={(error) => {
+              console.log('error photo', p)
+              console.error(`${LOG_PREFIX} Image load error:`, {
+                photoId: p.id,
+                uriRaw: p.uriRaw,
+                error: error.nativeEvent?.error
+              });
+            }}
+          />
+        )}
       </View>
-    ));
+    );
   };
 
   const currentPhoto = getCurrentPhoto();
@@ -94,9 +124,9 @@ export default function ImageDetailModal({
         <Appbar.Header statusBarHeight={0}>
           <Appbar.BackAction onPress={onClose} />
           <Appbar.Content title="图片详情" />
-          <Appbar.Action 
-            icon={showDetails ? "eye-off" : "eye"} 
-            onPress={toggleDetails} 
+          <Appbar.Action
+            icon={showDetails ? "eye-off" : "eye"}
+            onPress={toggleDetails}
           />
           {onEdit && (
             <Appbar.Action icon="pencil" onPress={() => onEdit(currentPhoto)} />
@@ -105,17 +135,27 @@ export default function ImageDetailModal({
 
         {photo && (
           <View style={styles.content}>
-            <ScrollView
+            <FlatList
               ref={scrollViewRef}
+              data={allPhotos.length > 0 ? allPhotos : (photo ? [photo] : [])}
+              renderItem={renderItem}
+              keyExtractor={(item) => item.id}
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
               onMomentumScrollEnd={handleScrollEnd}
+              initialScrollIndex={currentIndex}
+              getItemLayout={(data, index) => ({
+                length: Dimensions.get('window').width,
+                offset: Dimensions.get('window').width * index,
+                index,
+              })}
+              windowSize={3}
+              maxToRenderPerBatch={2}
+              removeClippedSubviews={true}
               style={styles.scrollView}
-            >
-              {renderImages()}
-            </ScrollView>
-            
+            />
+
             {/* 页面指示器 */}
             {allPhotos.length > 1 && (
               <View style={styles.indicatorContainer}>
@@ -124,7 +164,7 @@ export default function ImageDetailModal({
                 </Text>
               </View>
             )}
-            
+
             {showDetails && currentPhoto && (
               <View style={styles.detailsOverlay}>
                 <Text style={styles.title}>{currentPhoto.title}</Text>

@@ -1,11 +1,17 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
-import { Card } from 'react-native-paper';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useEffect, useMemo, useState } from 'react';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Card } from 'react-native-paper';
 
-export default function PhotoCard({ 
-  photo, 
-  columnWidth, 
+const formatDuration = (seconds) => {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.round(seconds % 60);
+  return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+};
+
+export default function PhotoCard({
+  photo,
+  columnWidth,
   onPress,
   onFavoritePress,
   isSelected,
@@ -16,6 +22,9 @@ export default function PhotoCard({
   const [imageLoadError, setImageLoadError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [prevIsSelected, setPrevIsSelected] = useState(isSelected); // 跟踪前一个选择状态
+  const [retryCount, setRetryCount] = useState(0);
+  const [imageKey, setImageKey] = useState(0);
+  const MAX_RETRIES = 3;
 
   // 处理收藏点击事件
   const handleFavoritePress = () => {
@@ -33,7 +42,7 @@ export default function PhotoCard({
     if (imageLoadError) {
       return null;
     }
-    
+
     const media = photo.uri || photo;
     // 如果是对象且有uri属性，直接返回
     if (typeof media === 'object' && media !== null && media.uri) {
@@ -61,67 +70,103 @@ export default function PhotoCard({
   return (
     <Card style={[styles.card, { width: columnWidth - 10 }, isSelected && styles.selectedCard]}>
       {/* 照片显示区域 */}
-      <TouchableOpacity 
-        onPress={onPress} 
+      <TouchableOpacity
+        onPress={onPress}
         onLongPress={onLongPress}
         style={styles.imageContainer}
       >
         {!imageLoadError && imageSource ? (
-          <Image 
-            source={imageSource} 
+          <Image
+            key={imageKey}
+            source={imageSource}
             style={styles.image}
             resizeMode="cover"
             onError={(error) => {
-              console.log('Image load error:', error);
-              setImageLoadError(true);
-              setImageLoaded(false);
+              console.error('[PhotoCard] Image load error:', {
+                photoId: photo.id,
+                uri: photo.uri,
+                retryCount,
+                error: error.nativeEvent?.error || error,
+                errorMessage: error.nativeEvent?.message
+              });
+
+              if (retryCount < MAX_RETRIES) {
+                const newRetryCount = retryCount + 1;
+                console.log(`[PhotoCard] Retrying (${newRetryCount}/${MAX_RETRIES}) for photo ${photo.id}`);
+                setRetryCount(newRetryCount);
+                setTimeout(() => {
+                  setImageKey(prev => prev + 1);
+                }, 1000 * newRetryCount);
+              } else {
+                console.error('[PhotoCard] Max retries reached:', {
+                  photoId: photo.id,
+                  uri: photo.uri
+                });
+                setImageLoadError(true);
+                setImageLoaded(false);
+              }
             }}
             onLoad={() => {
-              console.log('Image loaded successfully');
+              console.log('[PhotoCard] Image loaded:', photo.id);
               setImageLoaded(true);
               setImageLoadError(false);
+              setRetryCount(0);
             }}
           />
         ) : (
-          // 图片加载失败时显示占位符
           <View style={[styles.image, styles.placeholderImage]}>
-            <Text style={styles.placeholderText}>图片无法加载</Text>
+            <Text style={styles.placeholderText}>
+              {!imageSource ? '图片源无效' : '图片无法加载'}
+            </Text>
+            {retryCount > 0 && retryCount < MAX_RETRIES && (
+              <Text style={styles.retryText}>重试中 {retryCount}/{MAX_RETRIES}</Text>
+            )}
           </View>
         )}
         {/* 选择标记 - 左上角 */}
         {isSelected && (
           <View style={styles.selectionIndicator}>
-            <MaterialIcons 
-              name="check-circle" 
-              size={24} 
-              color="#007AFF" 
+            <MaterialIcons
+              name="check-circle"
+              size={24}
+              color="#007AFF"
             />
           </View>
         )}
         {/* 收藏图标 - 右上角 */}
-        <TouchableOpacity 
-          style={styles.favoriteIcon} 
+        <TouchableOpacity
+          style={styles.favoriteIcon}
           onPress={handleFavoritePress}
         >
-          <MaterialIcons 
-            name={isFavorite ? "favorite" : "favorite-border"} 
-            size={20} 
-            color={isFavorite ? "#FF6B6B" : "#FFFFFF"} 
+          <MaterialIcons
+            name={isFavorite ? "favorite" : "favorite-border"}
+            size={20}
+            color={isFavorite ? "#FF6B6B" : "#FFFFFF"}
           />
         </TouchableOpacity>
         {/* 标题显示在图片左下角 */}
-        <View style={styles.titleOverlay}>
-          <Text style={styles.title} numberOfLines={1}>
-            {photo.title || '未命名'}
-          </Text>
-        </View>
+        {photo.title ? (
+          <View style={styles.titleOverlay}>
+            <Text style={styles.title} numberOfLines={1}>
+              {photo.title}
+            </Text>
+          </View>
+        ) : null}
+
+        {/* Video Type Indicator */}
+        {photo.type === 'video' && (
+          <View style={styles.videoIndicator}>
+            <MaterialIcons name="play-circle-outline" size={24} color="#fff" />
+            {photo.duration > 0 && <Text style={styles.durationText}>{formatDuration(photo.duration)}</Text>}
+          </View>
+        )}
       </TouchableOpacity>
-      
+
       {/* 卡片下半部分：标签 */}
       <View style={styles.infoContainer}>
         {/* 标签显示区域 - 单行横向滚动 */}
-        <ScrollView 
-          horizontal 
+        <ScrollView
+          horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.tagsContainer}
           contentContainerStyle={styles.tagsContentContainer}
@@ -144,7 +189,7 @@ const styles = StyleSheet.create({
     elevation: 2,
     overflow: 'hidden',
     backgroundColor: '#fff',
-    height: 130, // 设置卡片固定高度为150
+    height: 130,
   },
   selectedCard: {
     borderColor: '#007AFF',
@@ -166,6 +211,11 @@ const styles = StyleSheet.create({
   placeholderText: {
     color: '#999',
     fontSize: 12,
+  },
+  retryText: {
+    color: '#666',
+    fontSize: 10,
+    marginTop: 4,
   },
   selectionIndicator: {
     position: 'absolute',
@@ -210,12 +260,28 @@ const styles = StyleSheet.create({
   },
   tag: {
     backgroundColor: '#e0e0e0',
-    borderRadius: 10,
+    borderRadius: 8,
     paddingHorizontal: 6,
     paddingVertical: 1,
     marginRight: 3,
     minWidth: 40,
     alignItems: 'center',
+  },
+  videoIndicator: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -12 }, { translateY: -12 }], // Center the icon
+    zIndex: 2,
+    alignItems: 'center',
+  },
+  durationText: {
+    color: '#fff',
+    fontSize: 10,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingHorizontal: 4,
+    borderRadius: 2,
+    marginTop: 2,
   },
   tagText: {
     fontSize: 11,

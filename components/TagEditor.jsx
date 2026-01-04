@@ -1,10 +1,11 @@
-import {View, StyleSheet, Text, TouchableOpacity} from "react-native";
+import { StyleSheet, View } from "react-native";
 import Tags from "react-native-tags";
 
-export default function TagEditor({tags, setTags}) {
+export default function TagEditor({ tags, setTags }) {
     return (
         <View style={styles.tagContainer}>
             <Tags
+                key={JSON.stringify(tags || [])} // 强制重新挂载以显示新的tags
                 initialText={''}
                 textInputProps={{
                     placeholder: "自定义标签，空格或逗号结尾",
@@ -17,8 +18,8 @@ export default function TagEditor({tags, setTags}) {
                 onChangeTags={(newTags) => {
                     setTags(newTags)
                 }}
-                containerStyle={{justifyContent: "space"}}
-                inputStyle={{backgroundColor: "white", borderRadius: 10}}
+                containerStyle={{ justifyContent: "space" }}
+                inputStyle={{ backgroundColor: "white", borderRadius: 10 }}
                 // 当标签数量变化时，不自动失焦
                 disableOnScroll={true}
                 // 禁用有问题的标签渲染功能，使用默认渲染
